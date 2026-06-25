@@ -3,16 +3,16 @@ from models import db
  
  
 CATEGORIAS = [
-    'Cálculo y Matemáticas',
-    'Simulación',
-    'Diseño CAD',
-    'Análisis de Datos',
-    'Programación',
-    'Electrónica',
-    'Mecánica',
-    'Química',
-    'Gestión de Proyectos',
-    'Otras',
+    'Planificación de Recursos (MRP/ERP)',
+    'Ventas y Clientes',
+    'Finanzas y Contabilidad',
+    'Operaciones',
+    'Recursos Humanos',
+    'Inventario y Logística',
+    'Reportes y Analítica',
+    'Herramientas Internas',
+    'Sistemas Externos',
+    'Otros',
 ]
  
  
