@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const htmlEl = document.documentElement;
     const themeIcon = document.getElementById('themeIcon');
 
-    const savedTheme = localStorage.getItem('portalTheme') || 'dark';
-    applyTheme(savedTheme);
+    applyTheme('light');
+    localStorage.setItem('portalTheme', 'light');
 
     themeToggle?.addEventListener('click', () => {
         const current = htmlEl.getAttribute('data-theme');
