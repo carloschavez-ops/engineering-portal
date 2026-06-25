@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% block title %}Inicio — PortalIng{% endblock %}
+{% block breadcrumb %}<span class="bc-page">Inicio</span>{% endblock %}
+
+{% block content %}
+<div class="dash-layout">
+
+    <!-- ── CENTER COLUMN ── -->
+    <div class="dash-center">
+
+        <!-- Hero welcome banner -->
+        <div class="hero-banner">
+            <div class="hero-glow"></div>
+            <div class="hero-content">
+                <p class="hero-eyebrow">Portal Centralizado de Ingeniería</p>
+                <h1 class="hero-title">Bienvenido, {{ current_user.nombre.split()[0] }}!</h1>
+                <p class="hero-sub">
+                    Tienes <strong>{{ total_apps }}</strong> aplicaciones registradas y
+                    <strong>{{ total_accesos }}</strong> accesos totales.
+                </p>
+                <div class="hero-actions">
+                    <a href="{{ url_for('apps.new_app') }}" class="btn-hero-primary">
+                        <i data-feather="plus"></i> Agregar app
+                    </a>
+                    <a href="{{ url_for('apps.list_apps') }}" class="btn-hero-ghost">
+                        Ver todas <i data-feather="arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="hero-decoration" aria-hidden="true">
+                <div class="deco-ring deco-ring-1"></div>
+                <div class="deco-ring deco-ring-2"></div>
+                <div class="deco-icon-float">
+                    <i data-feather="cpu"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action cards row (like Twitch's middle cards) -->
+        <div class="action-cards">
+
+            <!-- Last used app -->
+            <div class="action-card action-card--highlight">
+                {% if last_app %}
+                <div class="ac-icon" style="background:{{ last_app.color }}25;color:{{ last_app.color }}">
+                    <i data-feather="{{ last_app.icono }}"></i>
+                </div>
+                <div class="ac-body">
+                    <span class="ac-label">Última app usada</span>
+                    <h3 class="ac-title">{{ last_app.nombre }}</h3>
+                    {% set desc = last_app.descripcion or '' %}
+                    <p class="ac-desc">{{ (desc[:60] ~ '…') if desc|length > 60 else (desc if desc else 'Sin descripción') }}</p>
+                    <span class="ac-meta"><i data-feather="clock"></i> {{ last_access.strftime('%d %b, %H:%M') if last_access else '—' }}</span>
+                </div>
+                <a href="{{ url_for('apps.open_app', app_id=last_app.id) }}" target="_blank" class="ac-cta">
+                    Abrir <i data-feather="external-link"></i>
+                </a>
+                {% else %}
+                <div class="ac-icon" style="background:rgba(108,99,255,.15);color:#6C63FF">
+                    <i data-feather="package"></i>
+                </div>
+                <div class="ac-body">
+                    <span class="ac-label">Comienza ahora</span>
+                    <h3 class="ac-title">Sin actividad aún</h3>
+                    <p class="ac-desc">Agrega tu primera herramienta de ingeniería al portal.</p>
+                </div>
+                <a href="{{ url_for('apps.new_app') }}" class="ac-cta">
+                    Agregar <i data-feather="plus"></i>
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Keep it up / progress card -->
+            <div class="action-card">
+                <div class="ac-icon" style="background:rgba(0,212,170,.15);color:#00D4AA">
+                    <i data-feather="trending-up"></i>
+                </div>
+                <div class="ac-body">
+                    <span class="ac-label">Tu actividad</span>
+                    <h3 class="ac-title">¡Sigue así!</h3>
+                    {% set pct = [((total_apps / 10) * 100)|int, 100]|min %}
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width:{{ pct }}%; background:#00D4AA"></div>
+                    </div>
+                    <p class="ac-desc">{{ pct }}% hacia tu meta de 10 aplicaciones organizadas.</p>
+                </div>
+                <a href="{{ url_for('stats.stats') }}" class="ac-cta">
+                    Stats <i data-feather="bar-chart-2"></i>
+                </a>
+            </div>
+
+            <!-- Quick add -->
+            <div class="action-card">
+                <div class="ac-icon" style="background:rgba(255,107,107,.15);color:#FF6B6B">
+                    <i data-feather="zap"></i>
+                </div>
+                <div class="ac-body">
+                    <span class="ac-label">Acceso rápido</span>
+                    <h3 class="ac-title">{{ total_favs }} Favorita{{ 's' if total_favs != 1 else '' }}</h3>
+                    <p class="ac-desc">Tienes {{ total_favs }} app{{ 's' if total_favs != 1 else '' }} marcada{{ 's' if total_favs != 1 else '' }} como favorita{{ 's' if total_favs != 1 else '' }}.</p>
+                </div>
+                <a href="{{ url_for('apps.favorites') }}" class="ac-cta">
+                    Ver <i data-feather="star"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Spotlight / Quick grid -->
+        <section class="dash-section">
+            <div class="ds-header">
+                <h2 class="ds-title">
+                    <i data-feather="grid"></i> Acceso Rápido
+                </h2>
+                <a href="{{ url_for('apps.list_apps') }}" class="ds-link">Ver todas →</a>
+            </div>
+
+            {% set quick_apps = current_user.applications.order_by('nombre').limit(8).all() %}
+            {% if quick_apps %}
+            <div class="quick-grid">
+                {% for app in quick_apps %}
+                <a href="{{ url_for('apps.open_app', app_id=app.id) }}" target="_blank" class="quick-card">
+                    <div class="qc-icon" style="background:{{ app.color }}20;color:{{ app.color }}">
+                        <i data-feather="{{ app.icono }}"></i>
+                    </div>
+                    <span class="qc-name">{{ app.nombre }}</span>
+                    <span class="qc-cat">{{ app.categoria }}</span>
+                    {% if app.favorito %}<span class="qc-fav">⭐</span>{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-block">
+                <i data-feather="inbox"></i>
+                <p>No hay apps aún. <a href="{{ url_for('apps.new_app') }}">Agrega la primera</a></p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Recent activity list -->
+        {% if recent_apps %}
+        <section class="dash-section">
+            <div class="ds-header">
+                <h2 class="ds-title"><i data-feather="clock"></i> Recientes</h2>
+                <a href="{{ url_for('apps.recent') }}" class="ds-link">Ver más →</a>
+            </div>
+            <div class="recent-table">
+                {% for app in recent_apps %}
+                <div class="rt-row">
+                    <div class="rt-icon" style="background:{{ app.color }}20;color:{{ app.color }}">
+                        <i data-feather="{{ app.icono }}"></i>
+                    </div>
+                    <div class="rt-info">
+                        <span class="rt-name">{{ app.nombre }}</span>
+                        <span class="rt-cat">{{ app.categoria }}</span>
+                    </div>
+                    <span class="rt-badge" style="background:{{ app.color }}18;color:{{ app.color }}">
+                        {{ app.total_accesos }} acceso{{ 's' if app.total_accesos != 1 else '' }}
+                    </span>
+                    <a href="{{ url_for('apps.open_app', app_id=app.id) }}" target="_blank" class="rt-open">
+                        <i data-feather="external-link"></i>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+    </div><!-- /dash-center -->
+
+    <!-- ── RIGHT PANEL (Analytics) ── -->
+    <aside class="dash-right">
+        <div class="dr-header">
+            <h2 class="dr-title">Resumen</h2>
+            <span class="dr-sub">Esta semana</span>
+        </div>
+
+        <!-- Mini stat pills -->
+        <div class="mini-stats">
+            <div class="mini-stat">
+                <span class="ms-dot" style="background:#6C63FF"></span>
+                <span class="ms-lbl">Apps</span>
+                <span class="ms-val">{{ total_apps }}</span>
+            </div>
+            <div class="mini-stat">
+                <span class="ms-dot" style="background:#FFD700"></span>
+                <span class="ms-lbl">Favoritas</span>
+                <span class="ms-val">{{ total_favs }}</span>
+            </div>
+            <div class="mini-stat">
+                <span class="ms-dot" style="background:#00D4AA"></span>
+                <span class="ms-lbl">Categorías</span>
+                <span class="ms-val">{{ total_cats }}</span>
+            </div>
+            <div class="mini-stat">
+                <span class="ms-dot" style="background:#FF6B6B"></span>
+                <span class="ms-lbl">Accesos</span>
+                <span class="ms-val">{{ total_accesos }}</span>
+            </div>
+        </div>
+
+        <!-- Mini chart -->
+        <div class="dr-chart-wrap">
+            <p class="dr-chart-label">Actividad (7 días)</p>
+            <canvas id="miniWeekly" height="100"></canvas>
+        </div>
+
+        <!-- Divider -->
+        <div class="dr-divider"></div>
+
+        <!-- Category breakdown -->
+        <div class="dr-section">
+            <h3 class="dr-section-title">Por categoría</h3>
+            <canvas id="miniCats" height="140"></canvas>
+        </div>
+
+        <!-- Divider -->
+        <div class="dr-divider"></div>
+
+        <!-- Quick links -->
+        <div class="dr-section">
+            <h3 class="dr-section-title">Acciones rápidas</h3>
+            <div class="dr-links">
+                <a href="{{ url_for('apps.new_app') }}" class="dr-link-item">
+                    <i data-feather="plus-circle"></i> Nueva aplicación
+                </a>
+                <a href="{{ url_for('stats.stats') }}" class="dr-link-item">
+                    <i data-feather="bar-chart-2"></i> Ver estadísticas
+                </a>
+                <a href="{{ url_for('stats.history') }}" class="dr-link-item">
+                    <i data-feather="list"></i> Historial completo
+                </a>
+                <a href="{{ url_for('profile.profile') }}" class="dr-link-item">
+                    <i data-feather="user"></i> Editar perfil
+                </a>
+            </div>
+        </div>
+
+    </aside><!-- /dash-right -->
+
+</div><!-- /dash-layout -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const chartDefaults = {
+    font: { family: 'Inter', size: 11 },
+};
+
+// Weekly bar
+async function loadWeekly(){
+    const ctx = document.getElementById('miniWeekly');
+    if (!ctx) return;
+    try {
+        const r = await fetch(`${window.location.origin}/api/stats/weekly`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const d = await r.json();
+        if (!d || !d.labels || !d.data) return;
+        if (typeof Chart === 'undefined') return;
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: d.labels,
+                datasets: [{ data: d.data, backgroundColor: '#6C63FF', borderRadius: 4, borderSkipped: false }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.raw} accesos` } } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#666', font: chartDefaults.font } },
+                    y: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#666', font: chartDefaults.font, stepSize: 1 }, border: { display: false } }
+                }
+            }
+        });
+    } catch (e) {
+        console.error('Weekly chart error:', e);
+    }
+}
+
+// Category doughnut
+async function loadCategories(){
+    const ctx = document.getElementById('miniCats');
+    if (!ctx) return;
+    try {
+        const r = await fetch(`${window.location.origin}/api/stats/categories`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const d = await r.json();
+        if (!Array.isArray(d) || !d.length) return;
+        if (typeof Chart === 'undefined') return;
+
+        const palette = ['#6C63FF','#00D4AA','#FF6B6B','#FFD700','#45B7D1','#DDA0DD','#96CEB4','#F7DC6F'];
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: d.map(x=>x.categoria),
+                datasets: [{ data: d.map(x=>x.total), backgroundColor: palette, borderWidth: 0, hoverOffset: 4 }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%',
+                plugins: { legend: { position: 'bottom', labels: { color: '#888', font: chartDefaults.font, padding: 8, boxWidth: 10 } } }
+            }
+        });
+    } catch (e) {
+        console.error('Categories chart error:', e);
+    }
+}
+
+loadWeekly();
+loadCategories();
+</script>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Estadísticas — PortalIng{% endblock %}
+
+{% block breadcrumb %}<span>Estadísticas</span>{% endblock %}
+
+{% block content %}
+<div class="stats-page">
+    <div class="page-header">
+        <h1 class="page-title">Estadísticas</h1>
+        <p class="page-subtitle">Análisis de uso de tus aplicaciones</p>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="stats-grid" id="overviewCards">
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(108,99,255,.15);color:#6C63FF"><i data-feather="grid"></i></div><div class="stat-info"><span class="stat-value" id="st-apps">—</span><span class="stat-label">Apps Totales</span></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(255,215,0,.15);color:#FFD700"><i data-feather="star"></i></div><div class="stat-info"><span class="stat-value" id="st-favs">—</span><span class="stat-label">Favoritas</span></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(0,212,170,.15);color:#00D4AA"><i data-feather="activity"></i></div><div class="stat-info"><span class="stat-value" id="st-acc">—</span><span class="stat-label">Accesos Totales</span></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(255,107,107,.15);color:#FF6B6B"><i data-feather="tag"></i></div><div class="stat-info"><span class="stat-value" id="st-cats">—</span><span class="stat-label">Categorías</span></div></div>
+    </div>
+
+    <div class="charts-grid">
+        <!-- Weekly Activity -->
+        <div class="chart-card">
+            <h3 class="chart-title"><i data-feather="trending-up"></i> Actividad Semanal</h3>
+            <canvas id="weeklyChart" height="200"></canvas>
+        </div>
+
+        <!-- Top Apps -->
+        <div class="chart-card">
+            <h3 class="chart-title"><i data-feather="award"></i> Apps Más Usadas</h3>
+            <canvas id="topAppsChart" height="200"></canvas>
+        </div>
+
+        <!-- Categories -->
+        <div class="chart-card">
+            <h3 class="chart-title"><i data-feather="pie-chart"></i> Por Categoría</h3>
+            <canvas id="catsChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+const textColor = () => isDark() ? '#A0A0B0' : '#555';
+const gridColor = () => isDark() ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+
+// Load overview
+fetch('/api/stats/overview').then(r=>r.json()).then(d => {
+    document.getElementById('st-apps').textContent = d.total_apps;
+    document.getElementById('st-favs').textContent = d.total_favs;
+    document.getElementById('st-acc').textContent = d.total_accesos;
+    document.getElementById('st-cats').textContent = d.total_cats;
+});
+
+// Weekly chart
+fetch('/api/stats/weekly').then(r=>r.json()).then(d => {
+    new Chart(document.getElementById('weeklyChart'), {
+        type: 'bar',
+        data: {
+            labels: d.labels,
+            datasets: [{
+                label: 'Accesos',
+                data: d.data,
+                backgroundColor: 'rgba(108,99,255,0.7)',
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: gridColor() }, ticks: { color: textColor() } },
+                y: { grid: { color: gridColor() }, ticks: { color: textColor(), stepSize: 1 } }
+            }
+        }
+    });
+});
+
+// Top apps chart
+fetch('/api/stats/top-apps').then(r=>r.json()).then(d => {
+    if (!d.length) return;
+    new Chart(document.getElementById('topAppsChart'), {
+        type: 'bar',
+        data: {
+            labels: d.map(x=>x.nombre),
+            datasets: [{
+                label: 'Accesos',
+                data: d.map(x=>x.total),
+                backgroundColor: d.map(x=>x.color+'CC'),
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: gridColor() }, ticks: { color: textColor(), stepSize: 1 } },
+                y: { grid: { color: 'transparent' }, ticks: { color: textColor() } }
+            }
+        }
+    });
+});
+
+// Categories chart
+fetch('/api/stats/categories').then(r=>r.json()).then(d => {
+    if (!d.length) return;
+    const colors = ['#6C63FF','#00D4AA','#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7','#DDA0DD'];
+    new Chart(document.getElementById('catsChart'), {
+        type: 'doughnut',
+        data: {
+            labels: d.map(x=>x.categoria),
+            datasets: [{
+                data: d.map(x=>x.total),
+                backgroundColor: colors,
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { color: textColor(), padding: 12, font: { size: 12 } }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

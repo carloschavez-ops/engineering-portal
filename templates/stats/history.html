@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Historial — PortalIng{% endblock %}
+
+{% block breadcrumb %}<span>Historial</span>{% endblock %}
+
+{% block content %}
+<div class="history-page">
+    <div class="page-header">
+        <h1 class="page-title">Historial de Accesos</h1>
+        <p class="page-subtitle">Registro completo de tus aperturas de apps</p>
+    </div>
+
+    {% if entries.items %}
+    <div class="history-table-wrap">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Aplicación</th>
+                    <th>Categoría</th>
+                    <th>Fecha y hora</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries.items %}
+                <tr>
+                    <td>
+                        <div class="hist-app">
+                            <div class="hist-icon" style="background: {{ entry.application.color }}22; color: {{ entry.application.color }}">
+                                <i data-feather="{{ entry.application.icono }}"></i>
+                            </div>
+                            <span>{{ entry.application.nombre }}</span>
+                        </div>
+                    </td>
+                    <td><span class="cat-badge" style="background:{{ entry.application.color }}22;color:{{ entry.application.color }}">{{ entry.application.categoria }}</span></td>
+                    <td class="hist-date">{{ entry.fecha_acceso.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('apps.open_app', app_id=entry.application_id) }}" target="_blank" class="btn btn-ghost btn-sm">
+                            <i data-feather="external-link"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if entries.pages > 1 %}
+    <div class="pagination-wrap">
+        {% if entries.has_prev %}
+        <a href="{{ url_for('stats.history', page=entries.prev_num) }}" class="btn btn-ghost btn-sm">← Anterior</a>
+        {% endif %}
+        <span class="page-info">Página {{ entries.page }} de {{ entries.pages }}</span>
+        {% if entries.has_next %}
+        <a href="{{ url_for('stats.history', page=entries.next_num) }}" class="btn btn-ghost btn-sm">Siguiente →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon"><i data-feather="clock"></i></div>
+        <h2>Sin historial</h2>
+        <p>Aún no has abierto ninguna aplicación.</p>
+        <a href="{{ url_for('apps.list_apps') }}" class="btn btn-accent">Ver mis apps</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

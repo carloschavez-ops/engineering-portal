@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Registro — PortalIng{% endblock %}
+
+{% block auth_content %}
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><i data-feather="cpu"></i></div>
+      <h1>Portal de Ingeniería</h1>
+      <p>Crea tu cuenta gratuita</p>
+    </div>
+
+    <div class="auth-form">
+      <h2>Crear cuenta</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+        <div class="auth-alert auth-alert--{{ cat }}" id="authAlert">
+          <span>{{ msg }}</span>
+        </div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('auth.register') }}">
+        <div class="form-group">
+          <label>Nombre completo</label>
+          <div class="input-icon">
+            <i data-feather="user"></i>
+            <input type="text" name="nombre" class="form-control"
+                   placeholder="Tu nombre" required autofocus>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Correo electrónico</label>
+          <div class="input-icon">
+            <i data-feather="mail"></i>
+            <input type="email" name="correo" class="form-control"
+                   placeholder="tu@correo.com" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <div class="input-icon">
+            <i data-feather="lock"></i>
+            <input type="password" name="password" class="form-control"
+                   placeholder="Mínimo 6 caracteres" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Confirmar contraseña</label>
+          <div class="input-icon">
+            <i data-feather="check-circle"></i>
+            <input type="password" name="confirm_password" class="form-control"
+                   placeholder="Repite tu contraseña" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-accent w-100 justify-content-center">
+          <i data-feather="user-plus"></i> Crear Cuenta
+        </button>
+      </form>
+
+      <div class="auth-switch">
+        ¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.auth-alert').forEach(el => {
+  setTimeout(() => {
+    el.style.transition = 'opacity .5s';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 500);
+  }, 10000);
+});
+</script>
+{% endblock %}

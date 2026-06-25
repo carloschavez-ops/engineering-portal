@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }} — PortalIng{% endblock %}
+
+{% block breadcrumb %}<span>{{ titulo }}</span>{% endblock %}
+
+{% block content %}
+<div class="apps-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">{{ titulo }}</h1>
+            <p class="page-subtitle">{{ apps|length }} aplicación{{ 'es' if apps|length != 1 else '' }} encontrada{{ 's' if apps|length != 1 else '' }}</p>
+        </div>
+        <a href="{{ url_for('apps.new_app') }}" class="btn btn-accent">
+            <i data-feather="plus"></i> Nueva App
+        </a>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="cat-filters">
+            <a href="{{ url_for('apps.list_apps') }}" class="cat-chip {% if not selected_cat %}active{% endif %}">Todas</a>
+            {% for cat in categorias %}
+            <a href="{{ url_for('apps.list_apps', categoria=cat) }}" class="cat-chip {% if selected_cat == cat %}active{% endif %}">{{ cat }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Apps Grid -->
+    {% if apps %}
+    <div class="apps-grid" id="appsGrid">
+        {% for app in apps %}
+        <div class="app-card" data-name="{{ app.nombre }}" data-cat="{{ app.categoria }}">
+            <div class="app-card-header" style="background: linear-gradient(135deg, {{ app.color }}33, {{ app.color }}11)">
+                <div class="app-card-icon" style="color: {{ app.color }}">
+                    <i data-feather="{{ app.icono }}"></i>
+                </div>
+                <div class="app-card-menu">
+                    <button class="btn-icon fav-toggle" data-id="{{ app.id }}" title="{{ 'Quitar de favoritos' if app.favorito else 'Agregar a favoritos' }}">
+                        <i data-feather="star" class="{{ 'filled' if app.favorito else '' }}"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="app-card-body">
+                <h3 class="app-card-name">{{ app.nombre }}</h3>
+                <p class="app-card-desc">{{ app.descripcion or 'Sin descripción' }}</p>
+                <div class="app-card-meta">
+                    <span class="cat-badge" style="background: {{ app.color }}22; color: {{ app.color }}">{{ app.categoria }}</span>
+                    <span class="access-count"><i data-feather="activity"></i> {{ app.total_accesos }}</span>
+                </div>
+            </div>
+
+            <div class="app-card-footer">
+                <a href="{{ url_for('apps.open_app', app_id=app.id) }}" target="_blank" class="btn btn-accent btn-sm flex-grow-1">
+                    <i data-feather="external-link"></i> Abrir
+                </a>
+                <a href="{{ url_for('apps.edit_app', app_id=app.id) }}" class="btn btn-ghost btn-sm">
+                    <i data-feather="edit-2"></i>
+                </a>
+                <form method="POST" action="{{ url_for('apps.delete_app', app_id=app.id) }}" onsubmit="return confirm('¿Eliminar «{{ app.nombre }}»?')">
+                    <button type="submit" class="btn btn-ghost btn-sm btn-danger-ghost">
+                        <i data-feather="trash-2"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon"><i data-feather="package"></i></div>
+        <h2>Sin aplicaciones</h2>
+        <p>No hay aplicaciones en esta sección todavía.</p>
+        <a href="{{ url_for('apps.new_app') }}" class="btn btn-accent">
+            <i data-feather="plus"></i> Agregar primera app
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Favorite toggle
+document.querySelectorAll('.fav-toggle').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const id = btn.dataset.id;
+        const res = await fetch(`/apps/${id}/toggle-favorite`, { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token() if csrf_token is defined else "" }}'}});
+        const data = await res.json();
+        const icon = btn.querySelector('i');
+        icon.classList.toggle('filled', data.favorito);
+        btn.title = data.favorito ? 'Quitar de favoritos' : 'Agregar a favoritos';
+        feather.replace();
+    });
+});
+</script>
+{% endblock %}

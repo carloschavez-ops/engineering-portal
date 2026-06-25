@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Mi Perfil — PortalIng{% endblock %}
+
+{% block breadcrumb %}<span>Perfil</span>{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="page-header">
+        <h1 class="page-title">Mi Perfil</h1>
+        <p class="page-subtitle">Gestiona tu información personal</p>
+    </div>
+
+    <div class="profile-grid">
+        <!-- Avatar Card -->
+        <div class="profile-avatar-card">
+            <div class="avatar-circle">{{ current_user.nombre[0].upper() }}</div>
+            <h2>{{ current_user.nombre }}</h2>
+            <p class="profile-email">{{ current_user.correo }}</p>
+            <p class="profile-bio">{{ current_user.bio or 'Sin biografía' }}</p>
+            <div class="profile-stats">
+                <div class="pstat">
+                    <span class="pstat-val">{{ current_user.applications.count() }}</span>
+                    <span class="pstat-lbl">Apps</span>
+                </div>
+                <div class="pstat">
+                    <span class="pstat-val">{{ current_user.applications.filter_by(favorito=True).count() }}</span>
+                    <span class="pstat-lbl">Favoritas</span>
+                </div>
+                <div class="pstat">
+                    <span class="pstat-val">{{ current_user.history.count() }}</span>
+                    <span class="pstat-lbl">Accesos</span>
+                </div>
+            </div>
+            <p class="member-since">Miembro desde {{ current_user.fecha_registro.strftime('%B %Y') }}</p>
+        </div>
+
+        <!-- Edit Form -->
+        <div class="profile-form-card">
+            <form method="POST" action="{{ url_for('profile.profile') }}">
+                <h3>Información Personal</h3>
+
+                <div class="form-group">
+                    <label>Nombre completo</label>
+                    <input type="text" name="nombre" class="form-control" value="{{ current_user.nombre }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Correo electrónico</label>
+                    <input type="email" class="form-control" value="{{ current_user.correo }}" disabled>
+                    <small class="text-muted">El correo no se puede cambiar.</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Biografía</label>
+                    <textarea name="bio" class="form-control" rows="2" placeholder="Cuéntanos sobre ti...">{{ current_user.bio or '' }}</textarea>
+                </div>
+
+                <hr class="divider">
+                <h3>Cambiar Contraseña</h3>
+                <p class="text-muted small">Deja en blanco si no quieres cambiarla.</p>
+
+                <div class="form-group">
+                    <label>Contraseña actual</label>
+                    <input type="password" name="current_password" class="form-control" placeholder="••••••••">
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-grow-1">
+                        <label>Nueva contraseña</label>
+                        <input type="password" name="new_password" class="form-control" placeholder="••••••••">
+                    </div>
+                    <div class="form-group flex-grow-1">
+                        <label>Confirmar contraseña</label>
+                        <input type="password" name="confirm_password" class="form-control" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-accent">
+                        <i data-feather="save"></i> Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
