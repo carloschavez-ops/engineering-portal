@@ -5,6 +5,7 @@ from sqlalchemy import func
 from models import db
 from models.application import Application
 from models.history import History
+from models.favorite import Favorite
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -31,7 +32,13 @@ def index():
 
     # filter_by no funciona encadenado sobre una query con whereclause dinámica
     # → usar filter() con la columna explícita
-    total_favs    = _app_query().filter(Application.favorito == True).count()
+    if current_user.is_admin:
+        total_favs = Favorite.query.count()
+    
+    else:
+        total_favs = Favorite.query.filter_by(
+        user_id=current_user.id
+    ).count()
     total_accesos = _history_query().count()
 
     # Categorías distintas: construir el subquery manualmente según rol
@@ -67,24 +74,22 @@ def index():
     if current_user.is_admin:
         quick_apps = (
         Application.query
-        .order_by(
-            Application.favorito.desc(),
-            Application.nombre.asc()
-        )
+        .order_by(Application.nombre.asc())
         .limit(8)
         .all()
-    )
+        )
     else:
         quick_apps = (
         Application.query
         .filter(Application.user_id == current_user.id)
-        .order_by(
-            Application.favorito.desc(),
-            Application.nombre.asc()
-        )
+        .order_by(Application.nombre.asc())
         .limit(8)
         .all()
     )
+    favorite_ids = {
+    fav.application_id
+    for fav in Favorite.query.filter_by(user_id=current_user.id).all()
+}
 
     return render_template(
         'dashboard/index.html',
@@ -96,6 +101,7 @@ def index():
         last_app=last_app,
         last_access=last_access,
         quick_apps=quick_apps,
+        favorite_ids=favorite_ids,
     )
 
 
@@ -146,5 +152,3 @@ def api_categories():
         }
         for r in rows
     ])
-
-

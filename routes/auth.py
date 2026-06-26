@@ -23,19 +23,21 @@ def register():
         error = None
         if not nombre or not correo or not password:
             error = 'Todos los campos son obligatorios.'
-        elif correo not in CORREOS_ADMIN and not correo.endswith('@gmail.com'):
-            error = 'Solo se permiten correos de Gmail (@gmail.com).'
+        elif correo.endswith("@polyline.com") and correo not in CORREOS_ADMIN:
+            error = "Solo el administrador puede usar un correo @polyline.com."
         elif len(password) < 6:
             error = 'La contraseña debe tener al menos 6 caracteres.'
         elif password != confirm:
             error = 'Las contraseñas no coinciden.'
+        elif correo in CORREOS_ADMIN:
+            error = 'Esta cuenta está reservada para el administrador del sistema.'
         elif User.query.filter_by(correo=correo).first():
             error = 'Ya existe una cuenta con ese correo electrónico.'
 
         if error:
             flash(error, 'danger')
         else:
-            rol  = 'admin' if correo in CORREOS_ADMIN else 'user'
+            rol = 'user'
             user = User(nombre=nombre, correo=correo, rol=rol)
             user.set_password(password)
             db.session.add(user)

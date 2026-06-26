@@ -66,22 +66,24 @@
                     <i data-feather="{{ app.icono }}"></i>
                 </div>
                 <div class="app-card-menu">
+                    {% set es_favorito =
+                        app.favorites.filter_by(user_id=current_user.id).first()
+                        %}
                     <button class="btn-icon fav-toggle"
-                            data-id="{{ app.id }}"
-                            data-favorito="{{ 'true' if app.favorito else 'false' }}"
-                            title="{{ 'Quitar de favoritos' if app.favorito else 'Agregar a favoritos' }}">
-                        <i data-feather="star" class="{{ 'filled' if app.favorito else '' }}"></i>
-                    </button>
+        data-id="{{ app.id }}"
+        data-favorito="{{ 'true' if es_favorito else 'false' }}"
+        title="{{ 'Quitar de favoritos' if es_favorito else 'Agregar a favoritos' }}">
+    <i data-feather="star"
+       class="{{ 'filled' if es_favorito else '' }}"></i>
+</button>
                 </div>
             </div>
 
             <div class="app-card-body">
                 <h3 class="app-card-name">{{ app.nombre }}</h3>
-                {% if current_user.is_admin %}
-                <div class="text-muted small">
-                    Creada por: {{ app.owner.nombre }}
+                <div class="text-muted small mb-2">
+                    👤 <strong>Creada por:</strong> {{ app.owner.nombre }}
                 </div>
-                {% endif %}
                 <p class="app-card-desc">{{ app.descripcion or 'Sin descripción' }}</p>
                 <div class="app-card-meta" style="flex-wrap:wrap;gap:6px">
                     <span class="cat-badge"

@@ -179,9 +179,26 @@ body{background:var(--bg);color:var(--txt)}
   display:flex;align-items:center;gap:6px;flex-shrink:0;
 }
 .sb-user{
-  flex:1;display:flex;align-items:center;gap:8px;
-  padding:7px 8px;border-radius:var(--r);
-  transition:background .15s;min-width:0;
+    flex:1;
+
+    display:flex;
+    align-items:center;
+
+    gap:8px;
+
+    padding:7px 8px;
+
+    border-radius:var(--r);
+
+    transition:background .15s;
+
+    min-width:0;
+
+    overflow:hidden;
+}
+.sb-user-text{
+    flex:1;
+    min-width:0;
 }
 .sb-user:hover,.sb-user.is-active{background:var(--sb-hover)}
 .sb-avatar{
@@ -191,7 +208,16 @@ body{background:var(--bg);color:var(--txt)}
   font-weight:700;font-size:.85rem;flex-shrink:0;
   border:1px solid rgba(217,198,163,.25);
 }
-.sb-user-name{font-size:.8rem;font-weight:600;color:var(--txt);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-name{display:block;
+
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+
+    font-size:.8rem;
+    font-weight:600;
+    color:var(--txt);
+}
 .sb-user-role{font-size:.68rem;color:var(--txt3);display:block}
 .sb-icon-btn{
   width:30px;height:30px;border-radius:var(--r);
@@ -1129,4 +1155,12 @@ select.form-control{cursor:pointer}
     font-weight:600;
     margin-top:4px;
     margin-bottom:10px;
+}
+.app-owner{
+    font-size: .82rem;
+    color: var(--txt3);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }

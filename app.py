@@ -24,26 +24,18 @@ def create_app():
         return User.query.get(int(user_id))
 
     # ── Inyecta variables globales a todos los templates ──────────────────
-    @app.context_processor
-    def inject_globals():
+    @app.context_processor 
+    def inject_globals(): 
         from flask_login import current_user
-        from models.application import Application
+        from models.application import Application 
 
         total = 0
 
-        try:
+        try: 
             if current_user.is_authenticated:
-                if current_user.is_admin:
-                    # El administrador ve todas las aplicaciones
-                    total = Application.query.count()
-                else:
-                    # El usuario normal solo ve sus aplicaciones
-                    total = Application.query.filter_by(
-                        user_id=current_user.id
-                    ).count()
+                total = Application.query.count() 
         except Exception:
-            total = 0
-
+            total = 0 
         return dict(total_apps_global=total)
 
     # Register blueprints

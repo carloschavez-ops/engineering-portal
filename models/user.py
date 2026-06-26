@@ -19,6 +19,12 @@ class User(UserMixin, db.Model):
 
     applications  = db.relationship('Application', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
     history       = db.relationship('History', backref='user',  lazy='dynamic', cascade='all, delete-orphan')
+    favorites = db.relationship(
+    "Favorite",
+    back_populates="user",
+    cascade="all, delete-orphan",
+    lazy="dynamic"
+)
 
     @property
     def is_admin(self):
@@ -33,3 +39,5 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f'<User {self.correo} [{self.rol}]>'
     last_login = db.Column(db.DateTime)
+
+from models.favorite import Favorite

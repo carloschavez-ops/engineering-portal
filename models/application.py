@@ -31,7 +31,6 @@ class Application(db.Model):
     url            = db.Column(db.String(500), nullable=False)
     descripcion    = db.Column(db.Text, default='')
     categoria      = db.Column(db.String(100), default='Otros')
-    favorito       = db.Column(db.Boolean, default=False)
     icono          = db.Column(db.String(50), default='grid')
     color          = db.Column(db.String(20), default='#23486A')
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
@@ -39,6 +38,13 @@ class Application(db.Model):
 
     history = db.relationship('History', backref='application',
                               lazy='dynamic', cascade='all, delete-orphan')
+    favorites = db.relationship(
+    "Favorite",
+    back_populates="application",
+    cascade="all, delete-orphan",
+    lazy="dynamic"
+)
+    
 
     @property
     def total_accesos(self):
@@ -64,3 +70,4 @@ class Application(db.Model):
 
 
 from models.history import History  # noqa: E402
+from models.favorite import Favorite

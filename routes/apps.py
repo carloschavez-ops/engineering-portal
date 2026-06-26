@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from models import db
 from models.application import Application, CATEGORIAS, ESTADOS
 from models.history import History
+from models.favorite import Favorite
 
 apps_bp = Blueprint('apps', __name__)
 
@@ -14,17 +15,22 @@ COLORES = ['#23486A', '#2D9E6B', '#D43B3B', '#C8923A', '#2E5A84',
 
 
 def _app_query():
-    """Admin ve todas las apps; usuario normal solo las suyas."""
-    if current_user.is_admin:
-        return Application.query
-    return Application.query.filter_by(user_id=current_user.id)
+    """Todos los usuarios pueden ver todas las aplicaciones."""
+    return Application.query
 
+def _get_app(app_id):
+    """Cualquier usuario puede acceder a la aplicación para abrirla."""
+    return Application.query.get_or_404(app_id)
 
-def _get_app_or_404(app_id):
-    """Obtiene una app por id respetando el rol: admin puede acceder a cualquiera."""
+def _get_owned_app_or_404(app_id):
+    """Solo el dueño o el administrador pueden modificar una aplicación."""
     if current_user.is_admin:
         return Application.query.get_or_404(app_id)
-    return Application.query.filter_by(id=app_id, user_id=current_user.id).first_or_404()
+
+    return Application.query.filter_by(
+        id=app_id,
+        user_id=current_user.id
+    ).first_or_404()
 
 
 # ── Listados ───────────────────────────────────────────────────────────────
@@ -44,10 +50,22 @@ def list_apps():
 @apps_bp.route('/apps/favorites')
 @login_required
 def favorites():
-    apps = _app_query().filter(Application.favorito == True)\
-                       .order_by(Application.nombre).all()
-    return render_template('apps/list.html', apps=apps, categorias=CATEGORIAS,
-                           selected_cat='', titulo='Aplicaciones Favoritas')
+
+    apps = (
+        Application.query
+        .join(Favorite)
+        .filter(Favorite.user_id == current_user.id)
+        .order_by(Application.nombre)
+        .all()
+    )
+
+    return render_template(
+        "apps/list.html",
+        apps=apps,
+        categorias=CATEGORIAS,
+        selected_cat='',
+        titulo="Aplicaciones Favoritas"
+    )
 
 
 @apps_bp.route('/apps/recent')
@@ -82,7 +100,7 @@ def new_app():
         categoria   = request.form.get('categoria', 'Otros')
         icono       = request.form.get('icono', 'grid')
         color       = request.form.get('color', '#23486A')
-        favorito    = request.form.get('favorito') == 'on'
+        
         estado      = request.form.get('estado', 'disponible')
 
         if estado not in [e[0] for e in ESTADOS]:
@@ -98,7 +116,7 @@ def new_app():
                 nombre=nombre, url=url,
                 descripcion=descripcion, categoria=categoria,
                 icono=icono, color=color,
-                favorito=favorito, estado=estado,
+                
             )
             db.session.add(app)
             db.session.commit()
@@ -116,7 +134,7 @@ def new_app():
 @apps_bp.route('/apps/<int:app_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_app(app_id):
-    app = _get_app_or_404(app_id)
+    app = _get_owned_app_or_404(app_id)
 
     if request.method == 'POST':
         nombre      = request.form.get('nombre', '').strip()
@@ -142,7 +160,7 @@ def edit_app(app_id):
             app.categoria   = categoria
             app.icono       = icono
             app.color       = color
-            app.favorito    = favorito
+            #app.favorito    = favorito
             app.estado      = estado
             db.session.commit()
             flash('Aplicación actualizada correctamente.', 'success')
@@ -158,7 +176,7 @@ def edit_app(app_id):
 @apps_bp.route('/apps/<int:app_id>/delete', methods=['POST'])
 @login_required
 def delete_app(app_id):
-    app = _get_app_or_404(app_id)
+    app = _get_owned_app_or_404(app_id)
     nombre = app.nombre
     db.session.delete(app)
     db.session.commit()
@@ -172,10 +190,28 @@ def delete_app(app_id):
 @apps_bp.route('/apps/<int:app_id>/toggle-favorite', methods=['POST'])
 @login_required
 def toggle_favorite(app_id):
-    app = _get_app_or_404(app_id)
-    app.favorito = not app.favorito
+
+    favorito = Favorite.query.filter_by(
+        user_id=current_user.id,
+        application_id=app_id
+    ).first()
+
+    if favorito:
+        db.session.delete(favorito)
+        favorito_activo = False
+    else:
+        favorito = Favorite(
+            user_id=current_user.id,
+            application_id=app_id
+        )
+        db.session.add(favorito)
+        favorito_activo = True
+
     db.session.commit()
-    return jsonify({'favorito': app.favorito})
+
+    return jsonify({
+        "favorito": favorito_activo
+    })
 
 
 # ── Abrir ──────────────────────────────────────────────────────────────────
@@ -183,7 +219,7 @@ def toggle_favorite(app_id):
 @apps_bp.route('/apps/<int:app_id>/open')
 @login_required
 def open_app(app_id):
-    app = _get_app_or_404(app_id)
+    app = _get_app(app_id)
     if app.estado == 'fuera':
         flash(f'"{app.nombre}" está fuera de servicio.', 'danger')
         return redirect(url_for('apps.list_apps'))

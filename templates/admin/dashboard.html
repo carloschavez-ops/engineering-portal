@@ -109,16 +109,25 @@ Panel de Administración
 
                         <td class="text-center">
 
-                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}"
-                            class="btn btn-sm btn-ghost">
-                            ✏️
-                            </a>
+    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}"
+       class="btn btn-sm btn-ghost">
+        ✏️
+    </a>
 
-                            <button class="btn btn-sm btn-danger-ghost">
-                                🗑️
-                            </button>
+    {% if user.id != current_user.id %}
+    <form method="POST"
+          action="{{ url_for('admin.delete_user', user_id=user.id) }}"
+          style="display:inline;"
+          onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');">
 
-                        </td>
+        <button type="submit" class="btn btn-sm btn-danger-ghost">
+            🗑️
+        </button>
+
+    </form>
+    {% endif %}
+
+</td>
 
                     </tr>
 

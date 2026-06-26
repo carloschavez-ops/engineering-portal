@@ -10,6 +10,7 @@ from app import create_app
 from models import db
 from models.user import User
 from sqlalchemy import text
+from models.favorite import Favorite
 
 # ══════════════════════════════════════════
 #  DEFINE AQUÍ TUS USUARIOS
@@ -20,12 +21,6 @@ USUARIOS = [
         'correo':   'admin@polyline.com',
         'password': 'Admin2024*',
         'rol':      'admin',
-    },
-    {
-        'nombre':   'Usuario Demo',
-        'correo':   'usuario@polyline.com',
-        'password': 'User2024*',
-        'rol':      'user',
     },
 ]
 # ══════════════════════════════════════════

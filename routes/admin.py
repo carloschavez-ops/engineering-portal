@@ -9,6 +9,7 @@ from models import db
 from models.user import User
 from models.application import Application
 from models.history import History
+from models.favorite import Favorite
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -31,7 +32,8 @@ def dashboard():
     total_users = User.query.count()
     total_apps = Application.query.count()
     total_history = History.query.count()
-    total_favorites = Application.query.filter_by(favorito=True).count()
+    
+    total_favorites = Favorite.query.count()
 
     users = (
     User.query
@@ -86,6 +88,7 @@ def edit_user(user_id):
     )
 
 @admin_bp.route("/users/<int:user_id>/delete", methods=["POST"])
+@login_required
 @admin_required
 def delete_user(user_id):
 

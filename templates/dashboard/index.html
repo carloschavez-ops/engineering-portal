@@ -139,7 +139,9 @@
         {{ app.url | replace('https://','') | replace('http://','') | truncate(28, true, '…') if app.url else 'Sin URL' }}
       </span>
     <span class="spot-cat">{{ app.categoria }}</span>
-    {% if app.favorito %}
+
+    {% set es_favorito = app.favorites.filter_by(user_id=current_user.id).first() %}
+    {% if app.id in favorite_ids %}
     <span class="spot-star" title="Favorita">⭐</span>
     {% endif %}
   </a>

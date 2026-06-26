@@ -5,6 +5,7 @@ from sqlalchemy import func
 from models import db
 from models.application import Application
 from models.history import History
+from models.favorite import Favorite
 
 stats_bp = Blueprint('stats', __name__)
 
@@ -18,15 +19,21 @@ def stats():
 @stats_bp.route('/api/stats/overview')
 @login_required
 def overview():
-    total_apps = Application.query.filter_by(user_id=current_user.id).count()
-    total_favs = Application.query.filter_by(user_id=current_user.id, favorito=True).count()
-    total_accesos = History.query.filter_by(user_id=current_user.id).count()
-
+    total_apps = Application.query.count()
+    total_favs = Favorite.query.filter_by(
+    user_id=current_user.id
+).count()
+    if current_user.is_admin:
+        total_accesos = History.query.count()
+    else:
+        total_accesos = History.query.filter_by(user_id=current_user.id).count()
     cats = (
-        db.session.query(Application.categoria, func.count(Application.id))
-        .filter_by(user_id=current_user.id)
-        .group_by(Application.categoria)
-        .all()
+    db.session.query(
+        Application.categoria,
+        func.count(Application.id)
+    )
+    .group_by(Application.categoria)
+    .all()
     )
 
     return jsonify({
@@ -40,16 +47,34 @@ def overview():
 @stats_bp.route('/api/stats/top-apps')
 @login_required
 def top_apps():
-    results = (
-        db.session.query(Application.nombre, Application.color, func.count(History.id).label('total'))
-        .join(History, History.application_id == Application.id)
-        .filter(Application.user_id == current_user.id)
-        .group_by(Application.id)
-        .order_by(func.count(History.id).desc())
-        .limit(8)
-        .all()
+    query = (
+    db.session.query(
+        Application.nombre,
+        Application.color,
+        func.count(History.id).label("total")
     )
-    return jsonify([{'nombre': r.nombre, 'color': r.color, 'total': r.total} for r in results])
+    .join(History, History.application_id == Application.id)
+    )
+    if not current_user.is_admin:
+        query = query.filter(
+        History.user_id == current_user.id
+        )
+    results = (
+    query
+    .group_by(Application.id)
+    .order_by(func.count(History.id).desc())
+    .limit(8)
+    .all()
+    )
+    return jsonify([
+    {
+        "nombre": r.nombre,
+        "color": r.color,
+        "total": r.total
+    }
+    for r in results
+])
+
 
 @stats_bp.route('/api/stats/weekly')
 @login_required
@@ -92,9 +117,6 @@ def categories():
             func.count(Application.id)
         )
     )
-
-    if not current_user.is_admin:
-        query = query.filter(Application.user_id == current_user.id)
 
     results = (
         query
