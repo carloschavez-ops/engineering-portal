@@ -3,22 +3,47 @@
 
 {% block breadcrumb %}<span>{{ titulo }}</span>{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ── Estado badges ── */
+.estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+}
+.estado--verde     { background: rgba(45,158,107,.15); color: #2D9E6B; border: 1px solid rgba(45,158,107,.3); }
+.estado--amarillo  { background: rgba(200,146,58,.13); color: #C8923A; border: 1px solid rgba(200,146,58,.3); }
+.estado--rojo      { background: rgba(212,59,59,.13);  color: #D43B3B; border: 1px solid rgba(212,59,59,.3);  }
+
+/* Tarjeta con estado fuera de servicio — opacidad reducida */
+.app-card--fuera { opacity: .6; }
+.app-card--fuera .btn-accent { pointer-events: none; filter: grayscale(1); }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="apps-page">
     <div class="page-header">
         <div>
             <h1 class="page-title">{{ titulo }}</h1>
-            <p class="page-subtitle">{{ apps|length }} aplicación{{ 'es' if apps|length != 1 else '' }} encontrada{{ 's' if apps|length != 1 else '' }}</p>
+            <p class="page-subtitle">
+                {{ apps|length }} aplicación{{ 'es' if apps|length != 1 else '' }} encontrada{{ 's' if apps|length != 1 else '' }}
+            </p>
         </div>
-        
     </div>
 
     <!-- Filter Bar -->
     <div class="filter-bar">
         <div class="cat-filters">
-            <a href="{{ url_for('apps.list_apps') }}" class="cat-chip {% if not selected_cat %}active{% endif %}">Todas</a>
+            <a href="{{ url_for('apps.list_apps') }}"
+               class="cat-chip {% if not selected_cat %}active{% endif %}">Todas</a>
             {% for cat in categorias %}
-            <a href="{{ url_for('apps.list_apps', categoria=cat) }}" class="cat-chip {% if selected_cat == cat %}active{% endif %}">{{ cat }}</a>
+            <a href="{{ url_for('apps.list_apps', categoria=cat) }}"
+               class="cat-chip {% if selected_cat == cat %}active{% endif %}">{{ cat }}</a>
             {% endfor %}
         </div>
     </div>
@@ -27,13 +52,24 @@
     {% if apps %}
     <div class="apps-grid" id="appsGrid">
         {% for app in apps %}
-        <div class="app-card" data-name="{{ app.nombre }}" data-cat="{{ app.categoria }}">
-            <div class="app-card-header" style="background: linear-gradient(135deg, {{ app.color }}33, {{ app.color }}11)">
+
+        {% set badge = app.estado_badge %}
+
+        <div class="app-card {% if app.estado == 'fuera' %}app-card--fuera{% endif %}"
+             id="card-{{ app.id }}"
+             data-name="{{ app.nombre }}"
+             data-cat="{{ app.categoria }}">
+
+            <div class="app-card-header"
+                 style="background: linear-gradient(135deg, {{ app.color }}33, {{ app.color }}11)">
                 <div class="app-card-icon" style="color: {{ app.color }}">
                     <i data-feather="{{ app.icono }}"></i>
                 </div>
                 <div class="app-card-menu">
-                    <button class="btn-icon fav-toggle" data-id="{{ app.id }}" title="{{ 'Quitar de favoritos' if app.favorito else 'Agregar a favoritos' }}">
+                    <button class="btn-icon fav-toggle"
+                            data-id="{{ app.id }}"
+                            data-favorito="{{ 'true' if app.favorito else 'false' }}"
+                            title="{{ 'Quitar de favoritos' if app.favorito else 'Agregar a favoritos' }}">
                         <i data-feather="star" class="{{ 'filled' if app.favorito else '' }}"></i>
                     </button>
                 </div>
@@ -41,32 +77,64 @@
 
             <div class="app-card-body">
                 <h3 class="app-card-name">{{ app.nombre }}</h3>
+                {% if current_user.is_admin %}
+                <div class="text-muted small">
+                    Creada por: {{ app.owner.nombre }}
+                </div>
+                {% endif %}
                 <p class="app-card-desc">{{ app.descripcion or 'Sin descripción' }}</p>
-                <div class="app-card-meta">
-                    <span class="cat-badge" style="background: {{ app.color }}22; color: {{ app.color }}">{{ app.categoria }}</span>
-                    <span class="access-count"><i data-feather="activity"></i> {{ app.total_accesos }}</span>
+                <div class="app-card-meta" style="flex-wrap:wrap;gap:6px">
+                    <span class="cat-badge"
+                          style="background: {{ app.color }}22; color: {{ app.color }}">
+                        {{ app.categoria }}
+                    </span>
+                    <!-- Badge de estado -->
+                    <span class="estado-badge {{ badge[2] }}">
+                        {{ badge[0] }} {{ badge[1] }}
+                    </span>
+                    <span class="access-count" style="margin-left:auto">
+                        <i data-feather="activity"></i> {{ app.total_accesos }}
+                    </span>
                 </div>
             </div>
 
             <div class="app-card-footer">
-                <a href="{{ url_for('apps.open_app', app_id=app.id) }}" target="_blank" class="btn btn-accent btn-sm flex-grow-1">
+                {% if app.estado == 'fuera' %}
+                <!-- Fuera de servicio: botón deshabilitado -->
+                <span class="btn btn-ghost btn-sm flex-grow-1"
+                      style="justify-content:center;cursor:not-allowed;opacity:.5"
+                      title="Aplicación fuera de servicio">
+                    <i data-feather="slash"></i> No disponible
+                </span>
+                {% else %}
+                <a href="{{ url_for('apps.open_app', app_id=app.id) }}"
+                   target="_blank" class="btn btn-accent btn-sm flex-grow-1">
                     <i data-feather="external-link"></i> Abrir
                 </a>
-                <a href="{{ url_for('apps.edit_app', app_id=app.id) }}" class="btn btn-ghost btn-sm">
+                {% endif %}
+
+                {% if current_user.is_admin or app.user_id == current_user.id %}
+                <a href="{{ url_for('apps.edit_app', app_id=app.id) }}"
+                   class="btn btn-ghost btn-sm" title="Editar">
                     <i data-feather="edit-2"></i>
                 </a>
-                <form method="POST" action="{{ url_for('apps.delete_app', app_id=app.id) }}" onsubmit="return confirm('¿Eliminar «{{ app.nombre }}»?')">
-                    <button type="submit" class="btn btn-ghost btn-sm btn-danger-ghost">
+                <form method="POST"
+                      action="{{ url_for('apps.delete_app', app_id=app.id) }}"
+                      onsubmit="return confirm('¿Eliminar «{{ app.nombre }}»?')">
+                    <button type="submit"
+                            class="btn btn-ghost btn-sm btn-danger-ghost"
+                            title="Eliminar">
                         <i data-feather="trash-2"></i>
                     </button>
                 </form>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="empty-icon"><i data-feather="package"></i></div>
+        <div class="ei"><i data-feather="package"></i></div>
         <h2>Sin aplicaciones</h2>
         <p>No hay aplicaciones en esta sección todavía.</p>
         <a href="{{ url_for('apps.new_app') }}" class="btn btn-accent">
@@ -79,17 +147,44 @@
 
 {% block extra_js %}
 <script>
-// Favorite toggle
+const esFavoritas = {{ 'true' if titulo == 'Aplicaciones Favoritas' else 'false' }};
+
 document.querySelectorAll('.fav-toggle').forEach(btn => {
     btn.addEventListener('click', async (e) => {
         e.preventDefault();
-        const id = btn.dataset.id;
-        const res = await fetch(`/apps/${id}/toggle-favorite`, { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token() if csrf_token is defined else "" }}'}});
-        const data = await res.json();
+        e.stopPropagation();
+
+        const id   = btn.dataset.id;
+        const card = document.getElementById(`card-${id}`);
         const icon = btn.querySelector('i');
-        icon.classList.toggle('filled', data.favorito);
-        btn.title = data.favorito ? 'Quitar de favoritos' : 'Agregar a favoritos';
-        feather.replace();
+
+        try {
+            const res  = await fetch(`/apps/${id}/toggle-favorite`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+
+            if (data.favorito) {
+                icon.classList.add('filled');
+                btn.title = 'Quitar de favoritos';
+                btn.dataset.favorito = 'true';
+            } else {
+                icon.classList.remove('filled');
+                btn.title = 'Agregar a favoritos';
+                btn.dataset.favorito = 'false';
+
+                if (esFavoritas && card) {
+                    card.style.transition = 'opacity 0.3s, transform 0.3s';
+                    card.style.opacity    = '0';
+                    card.style.transform  = 'scale(0.95)';
+                    setTimeout(() => card.remove(), 300);
+                }
+            }
+            feather.replace();
+        } catch (err) {
+            console.error('Error al cambiar favorito:', err);
+        }
     });
 });
 </script>

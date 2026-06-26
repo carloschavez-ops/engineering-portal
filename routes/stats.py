@@ -51,37 +51,64 @@ def top_apps():
     )
     return jsonify([{'nombre': r.nombre, 'color': r.color, 'total': r.total} for r in results])
 
-
 @stats_bp.route('/api/stats/weekly')
 @login_required
 def weekly():
+
     today = datetime.utcnow().date()
+
     labels = []
     data = []
 
     for i in range(6, -1, -1):
-        day = today - timedelta(days=i)
-        count = History.query.filter(
-            History.user_id == current_user.id,
-            func.date(History.fecha_acceso) == day
-        ).count()
-        labels.append(day.strftime('%a'))
-        data.append(count)
 
-    return jsonify({'labels': labels, 'data': data})
+        day = today - timedelta(days=i)
+
+        query = History.query.filter(
+            func.date(History.fecha_acceso) == day
+        )
+
+        if not current_user.is_admin:
+            query = query.filter(
+                History.user_id == current_user.id
+            )
+
+        labels.append(day.strftime('%a'))
+        data.append(query.count())
+
+    return jsonify({
+        "labels": labels,
+        "data": data
+    })
 
 
 @stats_bp.route('/api/stats/categories')
 @login_required
 def categories():
+
+    query = (
+        db.session.query(
+            Application.categoria,
+            func.count(Application.id)
+        )
+    )
+
+    if not current_user.is_admin:
+        query = query.filter(Application.user_id == current_user.id)
+
     results = (
-        db.session.query(Application.categoria, func.count(Application.id))
-        .filter_by(user_id=current_user.id)
+        query
         .group_by(Application.categoria)
         .all()
     )
-    return jsonify([{'categoria': r[0], 'total': r[1]} for r in results])
 
+    return jsonify([
+        {
+            "categoria": r[0],
+            "total": r[1]
+        }
+        for r in results
+    ])
 
 @stats_bp.route('/history')
 @login_required

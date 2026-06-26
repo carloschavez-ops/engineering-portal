@@ -15,6 +15,13 @@
         <div class="profile-avatar-card">
             <div class="avatar-circle">{{ current_user.nombre[0].upper() }}</div>
             <h2>{{ current_user.nombre }}</h2>
+            <p class="profile-role">
+                {% if current_user.is_admin %}
+                Administrador
+                {% else %}
+                Usuario
+                {% endif %}
+            </p>
             <p class="profile-email">{{ current_user.correo }}</p>
             <p class="profile-bio">{{ current_user.bio or 'Sin biografía' }}</p>
             <div class="profile-stats">

@@ -48,6 +48,12 @@
         </div>
         <span class="act-eyebrow">Última app usada</span>
         <div class="act-title">{{ last_app.nombre }}</div>
+        {% if current_user.is_admin %}
+        <div class="act-owner">
+          <i data-feather="user" style="width:12px;height:12px"></i>
+          {{ last_app.owner.nombre }}
+        </div>
+        {% endif %}
         {% set desc = last_app.descripcion or '' %}
         <p class="act-desc">{{ (desc[:70] ~ '…') if desc|length > 70 else (desc if desc else 'Sin descripción') }}</p>
         <span class="act-meta">
@@ -112,7 +118,7 @@
         <a href="{{ url_for('apps.list_apps') }}" class="dash-sec-more">Ver todas →</a>
       </div>
  
-      {% set quick_apps = current_user.applications.order_by('nombre').limit(8).all() %}
+      
       {% if quick_apps %}
       <div class="spotlight-grid">
         {% for app in quick_apps %}
@@ -120,14 +126,23 @@
           <div class="spot-icon" style="background:{{ app.color }}22;color:{{ app.color }}">
             <i data-feather="{{ app.icono }}"></i>
           </div>
-          <span class="spot-name">{{ app.nombre }}</span>
-          <!-- URL visible del link -->
-          <span class="spot-url">
-            {{ app.url | replace('https://','') | replace('http://','') | truncate(28, true, '…') if app.url else 'Sin URL' }}
-          </span>
-          <span class="spot-cat">{{ app.categoria }}</span>
-          {% if app.favorito %}<span class="spot-star" title="Favorita">⭐</span>{% endif %}
-        </a>
+          
+        <span class="spot-name">{{ app.nombre }}</span>
+        {% if current_user.is_admin %}
+        <div class="spot-owner">
+          <i data-feather="user"></i>
+          {{ app.owner.nombre }}
+        </div>
+        {% endif %}
+        
+      <span class="spot-url">
+        {{ app.url | replace('https://','') | replace('http://','') | truncate(28, true, '…') if app.url else 'Sin URL' }}
+      </span>
+    <span class="spot-cat">{{ app.categoria }}</span>
+    {% if app.favorito %}
+    <span class="spot-star" title="Favorita">⭐</span>
+    {% endif %}
+  </a>
         {% endfor %}
       </div>
       {% else %}

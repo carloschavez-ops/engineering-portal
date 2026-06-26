@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}
+Panel de Administración
+{% endblock %}
+
+{% block breadcrumb %}
+<span>Administración</span>
+{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div>
+            <span class="stat-value">{{ total_users }}</span>
+            <span class="stat-label">Usuarios</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">🖥</div>
+        <div>
+            <span class="stat-value">{{ total_apps }}</span>
+            <span class="stat-label">Aplicaciones</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div>
+            <span class="stat-value">{{ total_favorites }}</span>
+            <span class="stat-label">Favoritos</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">📜</div>
+        <div>
+            <span class="stat-value">{{ total_history }}</span>
+            <span class="stat-label">Accesos</span>
+        </div>
+    </div>
+
+</div>
+<div class="dash-sec-head">
+
+    <h3 class="dash-sec-title">
+        👥 Usuarios registrados
+    </h3>
+
+    <span class="cat-badge">
+        {{ users|length }} usuarios
+    </span>
+
+</div>
+
+   
+        <div class="table-responsive">
+
+            <table class="history-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Registro</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for user in users %}
+
+                    <tr>
+
+                        <td>{{ user.nombre }}</td>
+
+                        <td>{{ user.correo }}</td>
+
+                        <td>
+
+                            {% if user.is_admin %}
+
+                                <span class="badge bg-danger">
+                                    Administrador
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-secondary">
+                                    Usuario
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {{ user.fecha_registro.strftime('%d/%m/%Y') }}
+
+                        </td>
+
+                        <td class="text-center">
+
+                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}"
+                            class="btn btn-sm btn-ghost">
+                            ✏️
+                            </a>
+
+                            <button class="btn btn-sm btn-danger-ghost">
+                                🗑️
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="text-end mt-4">
+
+    <a href="{{ url_for('admin.users') }}"
+    class="btn btn-accent">
+
+        Ver todos los usuarios →
+
+    </a>
+
+</div>
+
+
+{% endblock %}

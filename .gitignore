@@ -1,0 +1,13 @@
+# Entorno virtual
+venv/
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+
+# Archivos de configuración locales
+.env
+
+# Caché de Flask/Python
+instance/
+.pytest_cache/

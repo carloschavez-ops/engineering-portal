@@ -12,59 +12,87 @@
     <div class="form-card">
         <div class="form-card-header">
             <h1>{{ titulo }}</h1>
-            <p>{{ 'Edita los datos de tu aplicación' if app else 'Registra una nueva herramienta de ingeniería' }}</p>
+            <p>{{ 'Edita los datos de la aplicación' if app else 'Registra una nueva herramienta en el portal corporativo' }}</p>
         </div>
 
         <form method="POST" class="app-form">
+
+            <!-- Fila 1: Nombre + Categoría -->
             <div class="form-row">
                 <div class="form-group flex-grow-1">
                     <label>Nombre de la aplicación *</label>
-                    <input type="text" name="nombre" class="form-control" placeholder="Ej: MATLAB Online" value="{{ app.nombre if app else '' }}" required>
+                    <input type="text" name="nombre" class="form-control"
+                           placeholder="Ej: Sistema ERP" required
+                           value="{{ app.nombre if app else '' }}">
                 </div>
-                <div class="form-group" style="min-width:160px">
+                <div class="form-group" style="min-width:180px">
                     <label>Categoría</label>
                     <select name="categoria" class="form-control">
                         {% for cat in categorias %}
-                        <option value="{{ cat }}" {% if app and app.categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                        <option value="{{ cat }}"
+                            {% if app and app.categoria == cat %}selected{% endif %}>
+                            {{ cat }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
             </div>
 
+            <!-- URL -->
             <div class="form-group">
                 <label>URL de la aplicación *</label>
                 <div class="input-icon">
                     <i data-feather="link"></i>
-                    <input type="text" name="url" class="form-control" placeholder="https://app.ejemplo.com" value="{{ app.url if app else '' }}" required>
+                    <input type="text" name="url" class="form-control"
+                           placeholder="https://app.ejemplo.com" required
+                           value="{{ app.url if app else '' }}">
                 </div>
             </div>
 
+            <!-- Descripción -->
             <div class="form-group">
                 <label>Descripción</label>
-                <textarea name="descripcion" class="form-control" rows="3" placeholder="¿Para qué sirve esta aplicación?">{{ app.descripcion if app else '' }}</textarea>
+                <textarea name="descripcion" class="form-control" rows="3"
+                          placeholder="¿Para qué sirve esta aplicación?">{{ app.descripcion if app else '' }}</textarea>
             </div>
 
+            <!-- Estado de servicio -->
+            <div class="form-group">
+                <label>Estado de servicio</label>
+                <div class="estado-selector">
+                    {% for valor, etiqueta in estados %}
+                    <label class="estado-option {% if (app and app.estado == valor) or (not app and valor == 'disponible') %}selected{% endif %}"
+                           data-valor="{{ valor }}">
+                        <input type="radio" name="estado" value="{{ valor }}"
+                               {% if (app and app.estado == valor) or (not app and valor == 'disponible') %}checked{% endif %}>
+                        <span>{{ etiqueta }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Ícono + Color -->
             <div class="form-row">
-                <!-- Icon picker -->
                 <div class="form-group">
                     <label>Ícono</label>
                     <div class="icon-picker">
                         {% for icon in iconos %}
                         <label class="icon-option {% if (app and app.icono == icon) or (not app and icon == 'grid') %}selected{% endif %}">
-                            <input type="radio" name="icono" value="{{ icon }}" {% if (app and app.icono == icon) or (not app and icon == 'grid') %}checked{% endif %}>
+                            <input type="radio" name="icono" value="{{ icon }}"
+                                   {% if (app and app.icono == icon) or (not app and icon == 'grid') %}checked{% endif %}>
                             <i data-feather="{{ icon }}"></i>
                         </label>
                         {% endfor %}
                     </div>
                 </div>
 
-                <!-- Color picker -->
                 <div class="form-group">
                     <label>Color</label>
                     <div class="color-picker">
                         {% for color in colores %}
-                        <label class="color-option {% if (app and app.color == color) or (not app and color == '#6C63FF') %}selected{% endif %}">
-                            <input type="radio" name="color" value="{{ color }}" {% if (app and app.color == color) or (not app and color == '#6C63FF') %}checked{% endif %}>
+                        <label class="color-option {% if (app and app.color == color) or (not app and color == '#23486A') %}selected{% endif %}">
+                            <input type="radio" name="color" value="{{ color }}"
+                                   {% if (app and app.color == color) or (not app and color == '#23486A') %}checked{% endif %}>
                             <span style="background: {{ color }}"></span>
                         </label>
                         {% endfor %}
@@ -72,24 +100,33 @@
                 </div>
             </div>
 
-            <!-- Preview -->
+            <!-- Preview en vivo -->
             <div class="app-preview">
-                <div class="preview-icon" id="previewIcon" style="background: #6C63FF22; color: #6C63FF">
+                <div class="preview-icon" id="previewIcon"
+                     style="background:rgba(35,72,106,.25);color:#7BAFD4">
                     <i data-feather="grid"></i>
                 </div>
                 <div class="preview-info">
-                    <span class="preview-name" id="previewName">Nombre de la app</span>
-                    <span class="preview-url" id="previewUrl">https://...</span>
+                    <span class="preview-name" id="previewName">
+                        {{ app.nombre if app else 'Nombre de la app' }}
+                    </span>
+                    <span class="preview-url" id="previewUrl">
+                        {{ app.url if app else 'https://...' }}
+                    </span>
+                    <span class="preview-estado" id="previewEstado">🟢 Disponible</span>
                 </div>
             </div>
 
+            <!-- Favorito -->
             <div class="form-check-group">
                 <label class="form-check">
-                    <input type="checkbox" name="favorito" {% if app and app.favorito %}checked{% endif %}>
+                    <input type="checkbox" name="favorito"
+                           {% if app and app.favorito %}checked{% endif %}>
                     <i data-feather="star"></i> Marcar como favorita
                 </label>
             </div>
 
+            <!-- Acciones -->
             <div class="form-actions">
                 <a href="{{ url_for('apps.list_apps') }}" class="btn btn-ghost">Cancelar</a>
                 <button type="submit" class="btn btn-accent">
@@ -97,19 +134,88 @@
                     {{ 'Guardar cambios' if app else 'Crear aplicación' }}
                 </button>
             </div>
+
         </form>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* ── Estado selector ── */
+.estado-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.estado-option {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: var(--r);
+    border: 1.5px solid var(--border2);
+    background: var(--bg4);
+    cursor: pointer;
+    font-size: .84rem;
+    font-weight: 500;
+    color: var(--txt2);
+    transition: all .15s;
+    user-select: none;
+}
+.estado-option input { display: none; }
+.estado-option:hover {
+    background: var(--bg3);
+    color: var(--txt);
+}
+/* disponible */
+.estado-option[data-valor="disponible"].selected {
+    background: rgba(45,158,107,.15);
+    border-color: rgba(45,158,107,.5);
+    color: #2D9E6B;
+}
+/* mantenimiento */
+.estado-option[data-valor="mantenimiento"].selected {
+    background: rgba(200,146,58,.13);
+    border-color: rgba(200,146,58,.5);
+    color: #C8923A;
+}
+/* fuera */
+.estado-option[data-valor="fuera"].selected {
+    background: rgba(212,59,59,.13);
+    border-color: rgba(212,59,59,.5);
+    color: #D43B3B;
+}
+
+/* preview estado */
+.preview-estado {
+    font-size: .72rem;
+    color: var(--txt3);
+    margin-top: 2px;
+    display: block;
+}
+
+/* btn-icon (para el toggle de fav en list.html) */
+.btn-icon {
+    background: none; border: none; cursor: pointer;
+    color: var(--txt3); padding: 5px; border-radius: 6px;
+    display: flex; align-items: center; transition: all .15s;
+}
+.btn-icon:hover { background: var(--beige-dim); color: var(--beige); }
+.btn-icon svg { width: 15px; height: 15px; }
+.flex-grow-1 { flex: 1; }
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
-// Live preview
-const nameInput = document.querySelector('input[name="nombre"]');
-const urlInput = document.querySelector('input[name="url"]');
+// ── Live preview nombre / URL ──
+const nameInput   = document.querySelector('input[name="nombre"]');
+const urlInput    = document.querySelector('input[name="url"]');
 const previewName = document.getElementById('previewName');
-const previewUrl = document.getElementById('previewUrl');
+const previewUrl  = document.getElementById('previewUrl');
 const previewIcon = document.getElementById('previewIcon');
+const previewEst  = document.getElementById('previewEstado');
 
 nameInput?.addEventListener('input', () => {
     previewName.textContent = nameInput.value || 'Nombre de la app';
@@ -118,7 +224,28 @@ urlInput?.addEventListener('input', () => {
     previewUrl.textContent = urlInput.value || 'https://...';
 });
 
-// Icon picker
+// ── Estado selector ──
+const ESTADO_LABELS = {
+    'disponible':    '🟢 Disponible',
+    'mantenimiento': '🟡 En mantenimiento',
+    'fuera':         '🔴 Fuera de servicio',
+};
+
+document.querySelectorAll('.estado-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+        document.querySelectorAll('.estado-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        const val = opt.dataset.valor;
+        opt.querySelector('input').checked = true;
+        previewEst.textContent = ESTADO_LABELS[val] || '';
+    });
+});
+
+// Inicializar preview estado
+const checkedEstado = document.querySelector('input[name="estado"]:checked');
+if (checkedEstado) previewEst.textContent = ESTADO_LABELS[checkedEstado.value] || '';
+
+// ── Icon picker ──
 document.querySelectorAll('.icon-option').forEach(opt => {
     opt.addEventListener('click', () => {
         document.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
@@ -129,15 +256,27 @@ document.querySelectorAll('.icon-option').forEach(opt => {
     });
 });
 
-// Color picker
+// ── Color picker ──
 document.querySelectorAll('.color-option').forEach(opt => {
     opt.addEventListener('click', () => {
         document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
         opt.classList.add('selected');
         const color = opt.querySelector('input').value;
-        previewIcon.style.background = color + '22';
-        previewIcon.style.color = color;
+        previewIcon.style.background = color + '28';
+        previewIcon.style.color      = color;
     });
 });
+
+// ── Init preview con valores existentes (edición) ──
+const checkedColor = document.querySelector('input[name="color"]:checked');
+const checkedIcon  = document.querySelector('input[name="icono"]:checked');
+if (checkedColor) {
+    previewIcon.style.background = checkedColor.value + '28';
+    previewIcon.style.color      = checkedColor.value;
+}
+if (checkedIcon) {
+    previewIcon.innerHTML = `<i data-feather="${checkedIcon.value}"></i>`;
+    feather.replace();
+}
 </script>
 {% endblock %}

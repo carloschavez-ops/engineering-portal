@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Usuario{% endblock %}
+
+{% block breadcrumb %}
+<span>Administración / Editar Usuario</span>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="card shadow">
+
+        <div class="card-header">
+            <h3>✏️ Editar Usuario</h3>
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input
+                        type="text"
+                        name="nombre"
+                        class="form-control"
+                        value="{{ user.nombre }}"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Correo</label>
+                    <input
+                        type="email"
+                        name="correo"
+                        class="form-control"
+                        value="{{ user.correo }}"
+                        required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Rol</label>
+
+                    <select
+                        name="rol"
+                        class="form-select">
+
+                        <option value="user"
+                        {% if user.rol=="user" %}selected{% endif %}>
+                            Usuario
+                        </option>
+
+                        <option value="admin"
+                        {% if user.rol=="admin" %}selected{% endif %}>
+                            Administrador
+                        </option>
+
+                    </select>
+                </div>
+
+                <button
+                    class="btn btn-primary">
+
+                    Guardar cambios
+
+                </button>
+
+                <a
+                    href="{{ url_for('admin.dashboard') }}"
+                    class="btn btn-secondary">
+
+                    Cancelar
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
