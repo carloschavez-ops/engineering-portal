@@ -21,7 +21,7 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
 
     # ── Inyecta variables globales a todos los templates ──────────────────
     @app.context_processor 
@@ -56,6 +56,18 @@ def create_app():
     # Create tables
     with app.app_context():
         db.create_all()
+        admin = User.query.filter_by(rol='admin').first()
+        if not admin:
+            admin = User(
+            nombre='Administrador Polyline',
+            correo='admin@polyline.com',
+            rol='admin',
+            bio='Administrador del sistema'
+        )
+            admin.set_password('Admin2024*')
+            db.session.add(admin)
+            db.session.commit()
+            print("Administrador creado correctamente.")
 
     return app
 
@@ -66,4 +78,4 @@ app.config.setdefault('SESSION_COOKIE_SECURE', False)
 app.config.setdefault('SESSION_COOKIE_SAMESITE', 'Lax')
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=5000)

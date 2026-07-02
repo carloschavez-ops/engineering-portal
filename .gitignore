@@ -1,13 +1,31 @@
 # Entorno virtual
 venv/
+.venv/
 
-# Archivos compilados de Python
-__pycache__/
-*.py[cod]
-
-# Archivos de configuración locales
+# Variables de entorno
 .env
 
-# Caché de Flask/Python
-instance/
+# Base de datos local
+portal.db
+*.db
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caché de pruebas
 .pytest_cache/
+
+# Carpeta instance de Flask
+instance/
+
+# Archivos de VS Code
+.vscode/
+
+# Archivos de PyCharm
+.idea/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
