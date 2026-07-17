@@ -25,6 +25,12 @@ class User(UserMixin, db.Model):
     cascade="all, delete-orphan",
     lazy="dynamic"
 )
+    folders = db.relationship(
+    'Folder',
+    backref='owner',
+    lazy='dynamic',
+    cascade='all, delete-orphan'
+)
 
     @property
     def is_admin(self):

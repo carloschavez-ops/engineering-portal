@@ -4,6 +4,8 @@ from models import db
 from models.application import Application, CATEGORIAS, ESTADOS
 from models.history import History
 from models.favorite import Favorite
+from models.folder import Folder
+from sqlalchemy import func
 
 apps_bp = Blueprint('apps', __name__)
 
@@ -39,13 +41,26 @@ def _get_owned_app_or_404(app_id):
 @login_required
 def list_apps():
     categoria = request.args.get('categoria', '')
+    orden = request.args.get('orden', 'recientes')
+
     query = _app_query()
+
     if categoria:
         query = query.filter(Application.categoria == categoria)
-    apps = query.order_by(Application.fecha_creacion.desc()).all()
-    return render_template('apps/list.html', apps=apps, categorias=CATEGORIAS,
-                           selected_cat=categoria, titulo='Todas las Aplicaciones')
 
+    if orden == 'nombre':
+        apps = query.order_by(func.lower(Application.nombre)).all()
+    else:
+        apps = query.order_by(Application.fecha_creacion.desc()).all()
+
+    return render_template(
+        'apps/list.html',
+        apps=apps,
+        categorias=CATEGORIAS,
+        selected_cat=categoria,
+        titulo='Todas las Aplicaciones',
+        orden=orden
+    )
 
 @apps_bp.route('/apps/favorites')
 @login_required
@@ -71,21 +86,35 @@ def favorites():
 @apps_bp.route('/apps/recent')
 @login_required
 def recent():
+
+    orden = request.args.get('orden', 'recientes')
+
     history = (
         History.query
         .filter_by(user_id=current_user.id)
         .order_by(History.fecha_acceso.desc())
-        .limit(50).all()
+        .all()
     )
-    seen, apps = set(), []
+
+    seen = set()
+    apps = []
+
     for h in history:
         if h.application_id not in seen:
             seen.add(h.application_id)
             apps.append(h.application)
-            if len(apps) >= 20:
-                break
-    return render_template('apps/list.html', apps=apps, categorias=CATEGORIAS,
-                           selected_cat='', titulo='Aplicaciones Recientes')
+
+    if orden == "nombre":
+        apps.sort(key=lambda x: x.nombre.lower())
+
+    return render_template(
+        'apps/list.html',
+        apps=apps,
+        categorias=CATEGORIAS,
+        selected_cat='',
+        titulo='Aplicaciones Recientes',
+        orden=orden
+    )
 
 
 # ── Crear ──────────────────────────────────────────────────────────────────
@@ -213,6 +242,71 @@ def toggle_favorite(app_id):
         "favorito": favorito_activo
     })
 
+# ── Agregar a carpeta ─────────────────────────────────────────────
+
+@apps_bp.route('/apps/<int:app_id>/add-folder', methods=['GET','POST'])
+@login_required
+def add_to_folder(app_id):
+
+    app = _get_owned_app_or_404(app_id)
+
+
+    if request.method == "POST":
+
+        folder_id = request.form.get('folder_id')
+
+
+        if folder_id:
+
+            app.folder_id = folder_id
+
+            db.session.commit()
+
+
+            flash(
+                f'Aplicación "{app.nombre}" agregada a la carpeta.',
+                'success'
+            )
+
+
+            return redirect(
+                url_for('apps.list_apps')
+            )
+
+
+    if current_user.is_admin:
+
+        folders = Folder.query.all()
+
+    else:
+
+        folders = Folder.query.filter_by(
+            user_id=current_user.id
+        ).all()
+
+
+
+    return render_template(
+        'apps/add_folder.html',
+        app=app,
+        folders=folders
+    )
+@apps_bp.route('/apps/<int:app_id>/remove-folder', methods=['POST'])
+@login_required
+def remove_from_folder(app_id):
+
+    app = _get_owned_app_or_404(app_id)
+
+    app.folder_id = None
+
+    db.session.commit()
+
+    flash(
+        f'La aplicación "{app.nombre}" fue quitada de la carpeta.',
+        'success'
+    )
+
+    return redirect(request.referrer or url_for('folders.list_folders'))
 
 # ── Abrir ──────────────────────────────────────────────────────────────────
 

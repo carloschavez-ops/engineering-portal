@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}{{ titulo }} — PortalIng{% endblock %}
-{% block breadcrumb %}<span>{{ titulo }}</span>{% endblock %}
+{% block title %}{{ folder.nombre }} — PortalIng{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('folders.list_folders') }}">Carpetas</a>
+<i data-feather="chevron-right"></i>
+<span>{{ folder.nombre }}</span>
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -23,77 +28,33 @@
 
 {% block content %}
 <div class="apps-page">
+
+    <!-- Header carpeta -->
     <div class="page-header">
         <div>
-            <h1 class="page-title">{{ titulo }}</h1>
+            <h1 class="page-title">📁 {{ folder.nombre }}</h1>
             <p class="page-subtitle">
-                {{ apps|length }} aplicación{{ 'es' if apps|length != 1 else '' }} encontrada{{ 's' if apps|length != 1 else '' }}
+                {{ folder.descripcion or 'Sin descripción' }} —
+                {{ apps|length }} aplicación{{ 'es' if apps|length != 1 else '' }}
             </p>
         </div>
-    </div>
-
-    <!-- Filter Bar -->
-<div class="filter-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
-
-    <div class="cat-filters">
-        <a href="{{ url_for('apps.list_apps', orden=orden) }}"
-           class="cat-chip {% if not selected_cat %}active{% endif %}">
-            Todas
+        <a href="{{ url_for('folders.list_folders') }}" class="btn btn-ghost btn-sm">
+            <i data-feather="arrow-left"></i> Volver a carpetas
         </a>
-
-        {% for cat in categorias %}
-        <a href="{{ url_for('apps.list_apps', categoria=cat, orden=orden) }}"
-           class="cat-chip {% if selected_cat == cat %}active{% endif %}">
-            {{ cat }}
-        </a>
-        {% endfor %}
     </div>
-
-    <form method="GET">
-        <form method="GET"
-      action="{% if titulo == 'Aplicaciones Recientes' %}
-                  {{ url_for('apps.recent') }}
-              {% else %}
-                  {{ url_for('apps.list_apps') }}
-              {% endif %}">
-
-        {% if selected_cat %}
-        <input type="hidden" name="categoria" value="{{ selected_cat }}">
-        {% endif %}
-
-        <select
-            name="orden"
-            class="form-control"
-            style="width:190px"
-            onchange="this.form.submit()">
-
-            <option value="recientes"
-                {% if orden == 'recientes' %}selected{% endif %}>
-                Más recientes
-            </option>
-
-            <option value="nombre"
-                {% if orden == 'nombre' %}selected{% endif %}>
-                Nombre (A-Z)    
-            </option>
-
-        </select>
-
-    </form>
-
-</div>
 
     {% if apps %}
     <div class="apps-grid" id="appsGrid">
         {% for app in apps %}
+
         {% set badge = app.estado_badge %}
-        {% set es_favorito = app.favorites.filter_by(user_id=current_user.id).first() %}
 
         <div class="app-card {% if app.estado == 'fuera' %}app-card--fuera{% endif %}"
              id="card-{{ app.id }}"
              data-name="{{ app.nombre }}"
              data-cat="{{ app.categoria }}">
 
+            <!-- Header tarjeta -->
             <div class="app-card-header"
                  style="background: linear-gradient(135deg, {{ app.color }}33, {{ app.color }}11)">
                 <div class="app-card-icon" style="color: {{ app.color }}">
@@ -102,13 +63,14 @@
                 <div class="app-card-menu">
                     <button class="btn-icon fav-toggle"
                             data-id="{{ app.id }}"
-                            data-favorito="{{ 'true' if es_favorito else 'false' }}"
-                            title="{{ 'Quitar de favoritos' if es_favorito else 'Agregar a favoritos' }}">
-                        <i data-feather="star" class="{{ 'filled' if es_favorito else '' }}"></i>
+                            data-favorito="{{ 'true' if app.favorito else 'false' }}"
+                            title="{{ 'Quitar de favoritos' if app.favorito else 'Agregar a favoritos' }}">
+                        <i data-feather="star" class="{{ 'filled' if app.favorito else '' }}"></i>
                     </button>
                 </div>
             </div>
 
+            <!-- Body tarjeta -->
             <div class="app-card-body">
                 <h3 class="app-card-name">{{ app.nombre }}</h3>
                 <div class="text-muted small mb-2">
@@ -116,7 +78,8 @@
                 </div>
                 <p class="app-card-desc">{{ app.descripcion or 'Sin descripción' }}</p>
                 <div class="app-card-meta" style="flex-wrap:wrap;gap:6px">
-                    <span class="cat-badge" style="background: {{ app.color }}22; color: {{ app.color }}">
+                    <span class="cat-badge"
+                          style="background: {{ app.color }}22; color: {{ app.color }}">
                         {{ app.categoria }}
                     </span>
                     <span class="estado-badge {{ badge[2] }}">
@@ -128,10 +91,12 @@
                 </div>
             </div>
 
+            <!-- Footer tarjeta -->
             <div class="app-card-footer">
                 {% if app.estado == 'fuera' %}
                 <span class="btn btn-ghost btn-sm flex-grow-1"
-                      style="justify-content:center;cursor:not-allowed;opacity:.5">
+                      style="justify-content:center;cursor:not-allowed;opacity:.5"
+                      title="Aplicación fuera de servicio">
                     <i data-feather="slash"></i> No disponible
                 </span>
                 {% else %}
@@ -146,16 +111,13 @@
                    class="btn btn-ghost btn-sm" title="Editar">
                     <i data-feather="edit-2"></i>
                 </a>
-                <a href="{{ url_for('apps.add_to_folder', app_id=app.id) }}"
-                   class="btn btn-ghost btn-sm" title="Agregar a carpeta">
-                    <i data-feather="folder-plus"></i>
-                </a>
                 <form method="POST"
-                      action="{{ url_for('apps.delete_app', app_id=app.id) }}"
-                      style="display:inline;"
-                      onsubmit="return confirm('¿Eliminar «{{ app.nombre }}»?')">
-                    <button type="submit" class="btn btn-ghost btn-sm btn-danger-ghost" title="Eliminar">
-                        <i data-feather="trash-2"></i>
+                action="{{ url_for('apps.remove_from_folder', app_id=app.id) }}"
+                onsubmit="return confirm('¿Quitar «{{ app.nombre }}» de esta carpeta?')">
+                    <button type="submit"
+                    class="btn btn-ghost btn-sm"
+                    title="Quitar de la carpeta">
+                    <i data-feather="folder-minus"></i>
                     </button>
                 </form>
                 {% endif %}
@@ -166,28 +128,26 @@
 
     {% else %}
     <div class="empty-state">
-        <div class="ei"><i data-feather="package"></i></div>
-        <h2>Sin aplicaciones</h2>
-        <p>No hay aplicaciones en esta sección todavía.</p>
-        <a href="{{ url_for('apps.new_app') }}" class="btn btn-accent">
-            <i data-feather="plus"></i> Agregar primera app
+        <div class="ei"><i data-feather="folder"></i></div>
+        <h2>Carpeta vacía</h2>
+        <p>Agrega aplicaciones a esta carpeta desde la vista de todas las apps.</p>
+        <a href="{{ url_for('apps.list_apps') }}" class="btn btn-accent">
+            <i data-feather="grid"></i> Ver todas las apps
         </a>
     </div>
     {% endif %}
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-const esFavoritas = {{ 'true' if titulo == 'Aplicaciones Favoritas' else 'false' }};
-
 document.querySelectorAll('.fav-toggle').forEach(btn => {
     btn.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
 
         const id   = btn.dataset.id;
-        const card = document.getElementById(`card-${id}`);
         const icon = btn.querySelector('i');
 
         try {
@@ -205,13 +165,6 @@ document.querySelectorAll('.fav-toggle').forEach(btn => {
                 icon.classList.remove('filled');
                 btn.title = 'Agregar a favoritos';
                 btn.dataset.favorito = 'false';
-
-                if (esFavoritas && card) {
-                    card.style.transition = 'opacity 0.3s, transform 0.3s';
-                    card.style.opacity    = '0';
-                    card.style.transform  = 'scale(0.95)';
-                    setTimeout(() => card.remove(), 300);
-                }
             }
             feather.replace();
         } catch (err) {

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Carpetas{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Carpetas</h1>
+        <p class="page-subtitle">Organiza tus aplicaciones</p>
+    </div>
+    <a href="{{ url_for('folders.new_folder') }}" class="btn btn-accent">
+        <i data-feather="plus"></i> Nueva Carpeta
+    </a>
+</div>
+
+{% if folders %}
+<div class="apps-grid">
+    {% for folder in folders %}
+    <div class="app-card">
+
+        <!-- Encabezado -->
+        <div class="app-card-header"
+             style="background:linear-gradient(135deg,#23486A22,#23486A11)">
+            <div class="app-card-icon" style="color:#23486A">
+                <i data-feather="folder"></i>
+            </div>
+        </div>
+
+        <!-- Cuerpo -->
+        <div class="app-card-body">
+            <h3 class="app-card-name">{{ folder.nombre }}</h3>
+            <div class="app-card-meta" style="margin-bottom:8px;">
+    <span class="cat-badge"
+          style="background:#23486A22;color:#23486A;">
+        {{ folder.categoria }}
+    </span>
+</div>
+            <p class="app-card-desc">{{ folder.descripcion or "Sin descripción" }}</p>
+            <div class="app-card-meta">
+                <span class="access-count">
+                    <i data-feather="package"></i>
+                    {{ folder.applications.count() }} aplicación{{ 'es' if folder.applications.count() != 1 else '' }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="app-card-footer">
+            <a href="{{ url_for('folders.detail', id=folder.id) }}"
+               class="btn btn-accent btn-sm flex-grow-1">
+                <i data-feather="folder-open"></i> Abrir
+            </a>
+            <a href="{{ url_for('folders.edit_folder', id=folder.id) }}"
+               class="btn btn-ghost btn-sm" title="Editar carpeta">
+                <i data-feather="edit-2"></i>
+            </a>
+            <form method="POST"
+                  action="{{ url_for('folders.delete_folder', id=folder.id) }}"
+                  style="display:inline;"
+                  onsubmit="return confirm('¿Eliminar la carpeta «{{ folder.nombre }}»?')">
+                <button type="submit"
+                        class="btn btn-ghost btn-sm btn-danger-ghost"
+                        title="Eliminar carpeta">
+                    <i data-feather="trash-2"></i>
+                </button>
+            </form>
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state">
+    <div class="ei"><i data-feather="folder"></i></div>
+    <h2>No hay carpetas</h2>
+    <p>Todavía no has creado ninguna carpeta.</p>
+    <a href="{{ url_for('folders.new_folder') }}" class="btn btn-accent">
+        <i data-feather="plus"></i> Crear primera carpeta
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

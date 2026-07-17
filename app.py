@@ -4,6 +4,9 @@ from flask_login import LoginManager
 from config import Config
 from models import db
 from models.user import User
+from models.folder import Folder
+from flask_migrate import Migrate
+from sqlalchemy import inspect
 
 
 def create_app():
@@ -12,6 +15,7 @@ def create_app():
 
     # Init extensions
     db.init_app(app)
+    migrate = Migrate(app, db)
 
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -29,15 +33,19 @@ def create_app():
         from flask_login import current_user
         from models.application import Application 
 
-        total = 0
-
-        try: 
+        total_apps = 0
+        total_folders = 0
+        try:
             if current_user.is_authenticated:
-                total = Application.query.count() 
-        except Exception:
-            total = 0 
-        return dict(total_apps_global=total)
-
+                total_apps = Application.query.count()
+                from models.folder import Folder
+                total_folders = Folder.query.count()
+        except Exception as e:
+            print("Error contador sidebar:", e)
+        return dict(
+            total_apps_global=total_apps,
+            total_folders_global=total_folders
+            )
     # Register blueprints
     from routes.auth import auth_bp
     from routes.dashboard import dashboard_bp
@@ -45,6 +53,7 @@ def create_app():
     from routes.profile import profile_bp
     from routes.stats import stats_bp
     from routes.admin import admin_bp
+    from routes.folders import folders_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -52,19 +61,25 @@ def create_app():
     app.register_blueprint(profile_bp)
     app.register_blueprint(stats_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(folders_bp)
+    
 
     # Create tables
+    # Crear administrador solo si la tabla users ya existe
     with app.app_context():
-        db.create_all()
-        admin = User.query.filter_by(rol='admin').first()
-        if not admin:
-            admin = User(
-            nombre='Administrador Polyline',
-            correo='admin@polyline.com',
-            rol='admin',
-            bio='Administrador del sistema'
-        )
-            admin.set_password('Admin2024*')
+        inspector = inspect(db.engine)
+        
+        if "users" in inspector.get_table_names():
+            admin = User.query.filter_by(rol="admin").first()
+            
+            if not admin:
+                admin = User(
+                nombre="Administrador Polyline",
+                correo="admin@polyline.com",
+                rol="admin",
+                bio="Administrador del sistema"
+            )
+            admin.set_password("Admin2024*")
             db.session.add(admin)
             db.session.commit()
             print("Administrador creado correctamente.")

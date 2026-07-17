@@ -39,43 +39,119 @@
         <i data-feather="home"></i><span>Inicio</span>
       </a>
 
-      <p class="sb-section">Aplicaciones</p>
-      <a href="{{ url_for('apps.list_apps') }}"
-         class="sb-link {% if request.endpoint == 'apps.list_apps' %}is-active{% endif %}">
-        <i data-feather="grid"></i><span>Todas</span>
-        <!-- total_apps_global viene del context_processor en app.py -->
-        <span class="sb-pill">{{ total_apps_global }}</span>
-      </a>
-      <a href="{{ url_for('apps.favorites') }}"
-         class="sb-link {% if request.endpoint == 'apps.favorites' %}is-active{% endif %}">
-        <i data-feather="star"></i><span>Favoritas</span>
-      </a>
-      <a href="{{ url_for('apps.recent') }}"
-         class="sb-link {% if request.endpoint == 'apps.recent' %}is-active{% endif %}">
-        <i data-feather="clock"></i><span>Recientes</span>
-      </a>
-      <a href="{{ url_for('apps.new_app') }}"
-         class="sb-link sb-link--accent {% if request.endpoint == 'apps.new_app' %}is-active{% endif %}">
-        <i data-feather="plus-circle"></i><span>Nueva App</span>
-      </a>
+     <!-- ================= APLICACIONES ================= -->
 
-      <p class="sb-section">Análisis</p>
-      <a href="{{ url_for('stats.history') }}"
-         class="sb-link {% if request.endpoint == 'stats.history' %}is-active{% endif %}">
-        <i data-feather="list"></i><span>Historial</span>
-      </a>
-      <a href="{{ url_for('stats.stats') }}"
-         class="sb-link {% if request.endpoint == 'stats.stats' %}is-active{% endif %}">
-        <i data-feather="bar-chart-2"></i><span>Estadísticas</span>
-      </a>
-      {% if current_user.is_admin %}
-      <p class="sb-section">Administración</p>
-      <a href="{{ url_for('admin.dashboard') }}"
-      class="sb-link {% if request.endpoint == 'admin.dashboard' %}is-active{% endif %}">
-      <i data-feather="shield"></i>
-      <span>Panel Admin</span>
-    </a>
-    {% endif %}
+<div class="sb-group {% if request.endpoint in ['apps.list_apps','apps.favorites','apps.recent','apps.new_app'] %}open{% endif %}">
+
+    <button class="sb-group-btn" type="button">
+        <span>
+            <i data-feather="grid"></i>
+            Aplicaciones
+        </span>
+
+        <i data-feather="chevron-down" class="sb-arrow"></i>
+    </button>
+
+    <div class="sb-group-content">
+
+        <a href="{{ url_for('apps.list_apps') }}"
+           class="sb-link {% if request.endpoint == 'apps.list_apps' %}is-active{% endif %}">
+            <i data-feather="grid"></i>
+            <span>Todas</span>
+            <span class="sb-pill">{{ total_apps_global }}</span>
+        </a>
+
+        <a href="{{ url_for('apps.favorites') }}"
+           class="sb-link {% if request.endpoint == 'apps.favorites' %}is-active{% endif %}">
+            <i data-feather="star"></i>
+            <span>Favoritas</span>
+        </a>
+
+        <a href="{{ url_for('apps.recent') }}"
+           class="sb-link {% if request.endpoint == 'apps.recent' %}is-active{% endif %}">
+            <i data-feather="clock"></i>
+            <span>Recientes</span>
+        </a>
+
+        <a href="{{ url_for('apps.new_app') }}"
+           class="sb-link {% if request.endpoint == 'apps.new_app' %}is-active{% endif %}">
+            <i data-feather="plus-circle"></i>
+            <span>Nueva App</span>
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ================= CARPETAS ================= -->
+
+<a href="{{ url_for('folders.list_folders') }}"
+   class="sb-link {% if request.endpoint == 'folders.list_folders' %}is-active{% endif %}">
+    <i data-feather="folder"></i>
+    <span>Carpetas</span>
+    <span class="sb-pill">{{ total_folders_global }}</span>
+</a>
+
+
+<!-- ================= ANALISIS ================= -->
+
+<div class="sb-group {% if request.endpoint in ['stats.history','stats.stats'] %}open{% endif %}">
+
+    <button class="sb-group-btn" type="button">
+        <span>
+            <i data-feather="bar-chart-2"></i>
+            Análisis
+        </span>
+
+        <i data-feather="chevron-down" class="sb-arrow"></i>
+    </button>
+
+    <div class="sb-group-content">
+
+        <a href="{{ url_for('stats.history') }}"
+           class="sb-link {% if request.endpoint == 'stats.history' %}is-active{% endif %}">
+            <i data-feather="list"></i>
+            <span>Historial</span>
+        </a>
+
+        <a href="{{ url_for('stats.stats') }}"
+           class="sb-link {% if request.endpoint == 'stats.stats' %}is-active{% endif %}">
+            <i data-feather="bar-chart-2"></i>
+            <span>Estadísticas</span>
+        </a>
+
+    </div>
+
+</div>
+
+
+{% if current_user.is_admin %}
+
+<div class="sb-group {% if request.endpoint == 'admin.dashboard' %}open{% endif %}">
+
+    <button class="sb-group-btn" type="button">
+        <span>
+            <i data-feather="shield"></i>
+            Administración
+        </span>
+
+        <i data-feather="chevron-down" class="sb-arrow"></i>
+    </button>
+
+    <div class="sb-group-content">
+
+        <a href="{{ url_for('admin.dashboard') }}"
+           class="sb-link {% if request.endpoint == 'admin.dashboard' %}is-active{% endif %}">
+            <i data-feather="shield"></i>
+            <span>Panel Admin</span>
+        </a>
+
+    </div>
+
+</div>
+
+{% endif %}
 
     </nav>
 

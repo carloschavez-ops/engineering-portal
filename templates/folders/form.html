@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar carpeta' if folder else 'Nueva Carpeta' }} — PortalIng{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('folders.list_folders') }}">Carpetas</a>
+<i data-feather="chevron-right"></i>
+<span>{{ 'Editar' if folder else 'Nueva' }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card">
+        <div class="form-card-header">
+            <h1>{{ 'Editar carpeta' if folder else 'Crear carpeta' }}</h1>
+            <p>{{ 'Modifica los datos de la carpeta' if folder else 'Organiza tus aplicaciones en carpetas' }}</p>
+        </div>
+
+       <form method="POST"
+      action="{{ url_for('folders.edit_folder', id=folder.id) if folder else url_for('folders.new_folder') }}"
+      class="app-form">
+
+    <div class="form-group">
+        <label>Nombre de la carpeta *</label>
+        <input type="text"
+               name="nombre"
+               class="form-control"
+               value="{{ folder.nombre if folder else '' }}"
+               placeholder="Ej: Inteligencia Artificial, MRP, Diseño"
+               required>
+    </div>
+
+    <div class="form-group">
+        <label>Categoría *</label>
+        <input type="text"
+               name="categoria"
+               class="form-control"
+               value="{{ folder.categoria if folder else '' }}"
+               placeholder="Ej: MRP, Recursos Humanos, Finanzas"
+               required>
+    </div>
+
+    <div class="form-group">
+        <label>Descripción</label>
+        <textarea name="descripcion"
+                  class="form-control"
+                  rows="3"
+                  placeholder="¿Para qué sirve esta carpeta?">{{ folder.descripcion if folder else '' }}</textarea>
+    </div>
+
+    
+            <div class="form-actions">
+                <a href="{{ url_for('folders.list_folders') }}" class="btn btn-ghost">Cancelar</a>
+                <button type="submit" class="btn btn-accent">
+                    <i data-feather="save"></i>
+                    {{ 'Guardar cambios' if folder else 'Crear carpeta' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

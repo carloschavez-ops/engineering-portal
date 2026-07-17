@@ -35,6 +35,11 @@ class Application(db.Model):
     color          = db.Column(db.String(20), default='#23486A')
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     estado         = db.Column(db.String(20), default='disponible', nullable=False)
+    folder_id = db.Column(
+        db.Integer,
+        db.ForeignKey('folders.id'),
+        nullable=True
+    )
 
     history = db.relationship('History', backref='application',
                               lazy='dynamic', cascade='all, delete-orphan')

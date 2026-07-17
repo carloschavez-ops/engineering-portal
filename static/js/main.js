@@ -109,4 +109,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     });
 
+ // ─── SIDEBAR GROUPS (SOLO MÓVIL) ───
+document.querySelectorAll('.sb-group-btn').forEach(btn => {
+
+    btn.addEventListener('click', () => {
+
+        // En PC no hace nada
+        if (window.innerWidth >= 992){
+            return;
+        }
+
+        const group = btn.parentElement;
+
+        document.querySelectorAll('.sb-group').forEach(g => {
+            if(g !== group){
+                g.classList.remove('open');
+            }
+        });
+
+        group.classList.toggle('open');
+
+    });
+
+});
+
 });

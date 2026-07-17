@@ -172,6 +172,93 @@ body{background:var(--bg);color:var(--txt)}
   color:var(--txt3);font-size:.67rem;font-weight:700;
   padding:2px 7px;border-radius:20px;
 }
+/* ===========================
+   GRUPOS DESPLEGABLES SIDEBAR
+=========================== */
+
+.sb-group{
+    margin-bottom:6px;
+}
+
+.sb-group-btn{
+    width:100%;
+    border:0;
+    background:transparent;
+    color:var(--txt2);
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:8px 9px;
+
+    border-radius:var(--r);
+
+    cursor:pointer;
+
+    font-size:.84rem;
+    font-weight:600;
+
+    transition:.2s;
+}
+
+.sb-group-btn:hover{
+    background:var(--sb-hover);
+    color:var(--txt);
+}
+
+.sb-group-btn span{
+    display:flex;
+    align-items:center;
+    gap:9px;
+}
+
+.sb-group-btn svg{
+    width:16px;
+    height:16px;
+}
+
+.sb-arrow{
+    transition:.25s ease;
+}
+
+/* gira la flecha */
+
+.sb-group.open .sb-arrow{
+    transform:rotate(180deg);
+}
+
+/* contenedor */
+
+.sb-group-content{
+
+    max-height:0;
+
+    overflow:hidden;
+
+    transition:max-height .35s ease;
+
+    margin-left:14px;
+
+}
+
+/* abierto */
+
+.sb-group.open .sb-group-content{
+
+    max-height:350px;
+
+}
+
+/* enlaces internos */
+
+.sb-group-content .sb-link{
+
+    padding-left:20px;
+
+    font-size:.82rem;
+
+}
 
 /* Footer */
 .sb-footer{
@@ -1163,4 +1250,43 @@ select.form-control{cursor:pointer}
     display: flex;
     align-items: center;
     gap: 6px;
+}
+/* ==========================================
+   SIDEBAR DESPLEGABLE SOLO EN CELULAR
+========================================== */
+
+/* ESCRITORIO */
+@media (min-width:992px){
+
+    .sb-group-content{
+        max-height:none !important;
+        overflow:visible;
+        margin-left:0;
+    }
+
+    .sb-arrow{
+        display:none;
+    }
+
+    .sb-group-btn{
+        cursor:default;
+        pointer-events:none;
+    }
+
+}
+
+/* CELULAR */
+@media (max-width:991px){
+
+    .sb-group-content{
+        max-height:0;
+        overflow:hidden;
+        transition:max-height .3s ease;
+        margin-left:14px;
+    }
+
+    .sb-group.open .sb-group-content{
+        max-height:350px;
+    }
+
 }
