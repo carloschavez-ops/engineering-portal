@@ -111,15 +111,11 @@
                    class="btn btn-ghost btn-sm" title="Editar">
                     <i data-feather="edit-2"></i>
                 </a>
-                <form method="POST"
-                action="{{ url_for('apps.remove_from_folder', app_id=app.id) }}"
-                onsubmit="return confirm('¿Quitar «{{ app.nombre }}» de esta carpeta?')">
-                    <button type="submit"
-                    class="btn btn-ghost btn-sm"
-                    title="Quitar de la carpeta">
-                    <i data-feather="folder-minus"></i>
-                    </button>
-                </form>
+                <a href="{{ url_for('apps.add_to_folder', app_id=app.id) }}"
+                class="btn btn-ghost btn-sm"
+                title="Cambiar carpeta">
+                <i data-feather="refresh-cw"></i>
+                </a>
                 {% endif %}
             </div>
         </div>

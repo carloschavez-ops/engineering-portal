@@ -270,7 +270,7 @@ def add_to_folder(app_id):
 
 
             return redirect(
-                url_for('apps.list_apps')
+                request.referrer or url_for('apps.list_apps')
             )
 
 
