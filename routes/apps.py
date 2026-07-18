@@ -257,33 +257,25 @@ def add_to_folder(app_id):
 
 
         if folder_id:
-
-            app.folder_id = folder_id
-
-            db.session.commit()
-
-
-            flash(
-                f'Aplicación "{app.nombre}" agregada a la carpeta.',
-                'success'
+            app.folder_id = int(folder_id)
+            mensaje = "movida a la carpeta correctamente."
+        else:
+            app.folder_id = None
+            mensaje = "quitada de la carpeta."
+            
+        db.session.commit()
+        
+        flash(
+            f'Aplicación "{app.nombre}" {mensaje}',
+            "success"
             )
-
-
-            return redirect(
-                request.referrer or url_for('apps.list_apps')
-            )
-
-
+        return redirect(request.referrer or url_for("apps.list_apps"))
     if current_user.is_admin:
-
         folders = Folder.query.all()
-
     else:
-
-        folders = Folder.query.filter_by(
+            folders = Folder.query.filter_by(
             user_id=current_user.id
         ).all()
-
 
 
     return render_template(
