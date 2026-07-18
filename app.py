@@ -66,25 +66,8 @@ def create_app():
 
     # Create tables
     # Crear administrador solo si la tabla users ya existe
-    with app.app_context():
-        inspector = inspect(db.engine)
-        
-        if "users" in inspector.get_table_names():
-            admin = User.query.filter_by(rol="admin").first()
-            
-            if not admin:
-                admin = User(
-                nombre="Administrador Polyline",
-                correo="admin@polyline.com",
-                rol="admin",
-                bio="Administrador del sistema"
-            )
-            admin.set_password("Admin2024*")
-            db.session.add(admin)
-            db.session.commit()
-            print("Administrador creado correctamente.")
-
-    return app
+    # El administrador se creará después de ejecutar las migraciones
+    pass
 
 
 app = create_app()
