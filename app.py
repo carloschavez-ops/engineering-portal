@@ -68,6 +68,8 @@ def create_app():
     # Crear administrador solo si la tabla users ya existe
     # El administrador se creará después de ejecutar las migraciones
     pass
+    
+    return app
 
 
 app = create_app()
