@@ -18,8 +18,8 @@ from models.favorite import Favorite
 USUARIOS = [
     {
         'nombre':   'Administrador Polyline',
-        'correo':   'admin@polyline.com',
-        'password': 'Admin2024*',
+        'correo':   'promotorinmobiliario2021@gmail.com',
+        'password': 'Betsa0305@#$',
         'rol':      'admin',
     },
 ]
